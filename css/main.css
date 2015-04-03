@@ -36,8 +36,8 @@ h1 {
 .top_banner{
 	position: fixed;
 	width:100%;
-	height:140px;
-	min-height: 100px;
+	height:15%;
+	min-height: 140px;
 	min-width: inherit;
 	top:0px;
 	left:0px;
