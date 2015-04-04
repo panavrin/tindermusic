@@ -1,67 +1,76 @@
-	<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
-	<html>
-	<title>
-	Tinder Music Audience Interface
-	</title>
-	<body>
-	<div class = "top_banner">
-		<div class="section group height_100">
-			<div class="col-left span_2_of_4 center border height_100">
-				<div class = "banner">
-					<span class = "banner_text"><h1>ID:snaglee</h1></span>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>
+		Tinder Music Audience Interface
+		</title>
+
+		<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/themes/smoothness/jquery-ui.css" />
+		<link rel="stylesheet" type="text/css" href="./css/main.css">
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
+	  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+		<script src="http://cdn.pubnub.com/pubnub-3.7.1.min.js"></script>
+		<script src="./js/audience.js"></script>
+
+	</head>
+
+	<body onload="getNextDivName()">
+
+		<div class = "top_banner">
+			<div class="section group height_100">
+				<div class="col-left span_2_of_4 center border height_100">
+					<div class = "banner">
+						<span class = "banner_text"><h1 id="username">ID:snaglee</h1></span>
+					</div>
 				</div>
-			</div>
-			<div class="col-right span_2_of_4 center border height_100">
-				<div class = "banner">
-					<span class = "banner_text"><h1>update</h1></span>
+				<div class="col-right span_2_of_4 center border height_100">
+					<div class = "banner">
+						<span class = "banner_text"><h1>update</h1></span>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
 
-	<div class = "height_100">
-		<!--<div class="section group border height_25">
-			<div class="col span_2_of_4 center border height_100">
-			Sang
-			</div>
-			<div class="col span_2_of_4 center border height_100">
-			Edit
-			</div>
-		</div>-->
-		<!--<div class="section group border height_100">
-			<div class="col span_4_of_4 center border height_100">
-			-->	<div class = "banner">
-					<span class = "banner_text"><h1>1</h1></span>
+		<div class = "height_100">
+			<!--<div class="section group border height_25">
+				<div class="col span_2_of_4 center border height_100">
+				Sang
 				</div>
-		<!--	</div>
-		</div>-->
-		
-	</div>
+				<div class="col span_2_of_4 center border height_100">
+				Edit
+				</div>
+			</div>-->
+			<!--<div class="section group border height_100">
+				<div class="col span_4_of_4 center border height_100">
+				-->	<div class="banner">
+						<span class="banner_text"><h1 id="tindered">NoNaMe</h1></span>
+					</div>
+			<!--	</div>
+			</div>-->
 
-	<div class = "bottom_banner">
-		<div class="section group height_100">
-			<div class="col-left span_2_of_4 center border height_100 ">
-				<div class = "banner">
-					<span class = "banner_text"><img  src="./images/heart.png" height="120px"></span>
+		</div>
+
+		<div class = "bottom_banner">
+			<div class="section group height_100">
+				<div class="col-left span_2_of_4 center border height_100 ">
+					<div class = "banner">
+						<span class = "banner_text"><img  src="./images/heart.png" height="120px"></span>
+					</div>
 				</div>
-			</div>
-			<div class="col-right span_2_of_4 center border height_100 ">
-				<div class = "banner">
-					<span class = "banner_text"><img src="./images/close.png" height="120px"></span>
+				<div class="col-right span_2_of_4 center border height_100 ">
+					<div class = "banner">
+						<span class = "banner_text"><img onclick="getNextDivName()" src="./images/close.png" height="120px"></span>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+
 	</body>
 
-	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/themes/smoothness/jquery-ui.css" />
-	<link rel="stylesheet" type="text/css" href="./css/main.css">
-	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-
-	 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
-  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-
-	<script src="./js/audience.js"></script>
-
-	</html>
+</html>

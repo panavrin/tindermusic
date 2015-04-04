@@ -1,0 +1,33 @@
+/*body {
+  margin: 0 0;
+  padding: 0 0;
+}*/
+#selecteds {
+  background-color: black;
+  color: grey;
+  float: left;
+  width: 64%;
+  height: auto;
+}
+
+#unselecteds {
+  background-color: blue;
+  float:right;
+  width: 34%;
+  height: auto;
+}
+
+.unselected {
+  background-color: yellow;
+  width: 50%;
+  padding: 10px;
+  margin: 0 auto 10px;
+}
+
+.selected {
+  background-color: brown;
+  width: 20%;
+  float: left;
+  padding: 10px;
+  margin: 10px;
+}
