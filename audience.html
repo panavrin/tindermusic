@@ -13,8 +13,9 @@
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
-	  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+        <script src="./js/jquery.bpopup.min.js"></script>
 		<script src="http://cdn.pubnub.com/pubnub-3.7.1.min.js"></script>
 		<script src="./js/audience.js"></script>
 
@@ -70,6 +71,19 @@
 				</div>
 			</div>
 		</div>
+
+        <div id="initial-message" class="dialog-message" >
+            <div>   
+                <h1>C[rowd] in C[loud]</h1>
+                <p>Please type your screen name for participation. (Only alphabets, numbers, dot(.), and underscore(_) are allowed / shorter than 12 letters) </p>
+                <div id  = "name_error_msg" class = "red"></div>
+                <div class = "buttons center">
+                    <input type="text" name="screenname" id="screenname" value="" class="ui-widget-content ui-corner-all" />
+                    <br/><br/>
+                    <button id = "start">Start</button> 
+                </div>
+            </div>
+        </div>
 
 	</body>
 

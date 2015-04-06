@@ -100,6 +100,9 @@ h1 {
   line-height: normal;   
   text-align: center;   
 }
+.center{
+	text-align: center;   	
+}
 
 .border{
 	border:solid;
@@ -117,6 +120,24 @@ h1 {
 }
 .height_100{
 	height:100%;
+}
+.red{
+	color: red;
+}
+
+.dialog-message{
+    font-family: Courier New;   
+    width:40%;
+    max-width:50%;
+    position:absolute;
+    top:200px;
+    margin:20px;
+    padding: 5px 20px 13px 20px;
+    border-radius: 10px;
+    background: #fff;
+    background: -moz-linear-gradient(#fff, #999);
+    background: -webkit-linear-gradient(#fff, #999);
+    background: -o-linear-gradient(#fff, #999);
 }
 /*  GO FULL WIDTH BELOW 480 PIXELS 
 @media only screen and (max-width: 480px) {
