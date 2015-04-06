@@ -85,14 +85,14 @@ $(document).ready(function () {
 
   // Parse messages received from PubNub platform
   
-  $('#initial-message').bPopup({
+ /* $('#initial-message').bPopup({
     modalClose: false,
     opacity: 0.7,
-  //  positionStyle: 'fixed',
+    positionStyle: 'absolute',
   //  position: [50%, 20], 
     escClose :false
   });
-
+*/
   $("#start").button().css({ margin:'5px'}).click(function(){
       $("#name_error_msg").text("");
 
@@ -111,7 +111,7 @@ $(document).ready(function () {
 
     $("#name_error_msg").text("Waiting for response...");
 
-    // $('#initial-message').bPopup().close();
+    $('#initial-message').bPopup().close();
   });
 
 

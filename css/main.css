@@ -9,7 +9,7 @@ body {
 	min-height: 400px;
 }
 
-h1 {
+h1,h2,h3,h4 {
 	font-family: Helvetica, Geneva, Arial,SunSans-Regular, sans-serif 
 }
 /*  SECTIONS  */
@@ -130,7 +130,8 @@ h1 {
     width:40%;
     max-width:50%;
     position:absolute;
-    top:200px;
+    top:20%;
+    left:30%;
     margin:20px;
     padding: 5px 20px 13px 20px;
     border-radius: 10px;
