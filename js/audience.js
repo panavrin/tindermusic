@@ -121,6 +121,12 @@ $(document).ready(function () {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
     // create an AudioContext
     context = new AudioContext();
+    alert('Web Audio API supported.');
+
+    var osc = context.createOscillator();
+    osc.connect(context.destination);
+    osc.start(0);
+
   } catch(e) {
     // API not supported
     alert('Web Audio API not supported.');
