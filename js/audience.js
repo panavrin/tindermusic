@@ -150,21 +150,25 @@ $(document).ready(function () {
   });
 */
   var pattern = [];
-  var patternSize = 4;
+  var patternSize = 5;
 
   var context;
   // this is moved here to support iOS : http://stackoverflow.com/questions/12517000/no-sound-on-ios-6-web-audio-api
 
   try {
     // still needed for Safari
-    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    //window.AudioContext = window.AudioContext || window.webkitAudioContext;
     // create an AudioContext
-    context = new AudioContext();
+    context = WX._ctx
    // alert('Web Audio API supported.');
+
   } catch(e) {
     // API not supported
     alert('Web Audio API not supported, please use most recent Chrome (41+), FireFox(31+) or Safari (iOS 7.1+).');
   }
+
+  var fmk = WX.FMK1();
+
 
   $("#start").button().css({ margin:'5px'}).click(function(){
       $("#name_error_msg").text("");
@@ -186,24 +190,48 @@ $(document).ready(function () {
 
     $('#initial-message').bPopup().close();
 
-    var osc = context.createOscillator();
-    osc.connect(context.destination);
+    var delay = WX.StereoDelay({
+    mix: 1.0,
+    delayTimeLeft: 0.5,
+    delayTimeRight: 0.75,
+    feedbackLeft: 0.2,
+    feedbackRight: 0.4,
+    crosstalk: 0.25
+    }),
+    converb = WX.ConVerb({
+    mix: 1.0,
+    output: 0.5
+    }), 
+    compressor = context.createDynamicsCompressor()
+    , masterGain = context.createGain();
+
+    masterGain.gain.value = 1.0;
+
+    converb.loadClip({
+      name: 'BigEmptyChurch',
+      url: './sound/960-BigEmptyChurch.mp3'
+    });
+
+    fmk.to(compressor);
+    fmk.to(delay).to(converb).to(compressor);
+
+    masterGain.connect(context.destination);
+    compressor.connect(masterGain);
     
-    osc.start(0);
-    osc.stop(context.currentTime+1);
+
+    
+
+    
   });
   
-  
-  
   var playBarNote = -1;
-  var interval = 3;
-  var intervalBetweenPattern = 3;
+  var intervalBetweenPattern = 1;
+  var interval = intervalBetweenPattern;
   var progress = 0;
   var lastPingTime = context.currentTime;
   var speed = 300; // 300 pixel per second; 
 
   function init() {
-
     // Initialise our object
    // obj = {x:50, y:50, w:70, h:70};
     canvas = $("#patternCanvas")[0];
@@ -220,7 +248,6 @@ $(document).ready(function () {
     for (var i=0; i< patternSize-1; i++){
       pattern[i].distance = dist(pattern[i].x,pattern[i].y,pattern[i+1].x,pattern[i+1].y);
     }
- 
     // Add eventlistener to canvas
     canvas.addEventListener('touchmove',touchHandler, false);
     canvas.addEventListener('mousemove', mouseHandler, false);
@@ -237,8 +264,6 @@ $(document).ready(function () {
  
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    //ctx.fillStyle = '#CB59FF';
  
     for (var i=0; i< patternSize; i++){
     //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
@@ -266,7 +291,10 @@ $(document).ready(function () {
       playBarNote++;
       lastPingTime = currentTime;
       interval = pattern[playBarNote].distance / speed;
-      console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
+      fmk.noteOn(60, 127, context.currentTime);
+      fmk.noteOff(60,0,context.currentTime + 1);
+      
+  //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
     }
 
     progress = (currentTime - lastPingTime ) / interval;
@@ -274,15 +302,17 @@ $(document).ready(function () {
       playBarNote++;
       progress = 0;
       lastPingTime = currentTime;
+      fmk.noteOn(60 + playBarNote * 2, 127, context.currentTime);
+      fmk.noteOff(60 + playBarNote * 2,0,context.currentTime + 1);
+      
       if (playBarNote == patternSize-1)
       {
         interval = intervalBetweenPattern;
         playBarNote = -1;
-        console.log("end! (" + playBarNote + "," + interval);
+    //    console.log("end! (" + playBarNote + "," + interval);
       }else{
         interval = pattern[playBarNote].distance / speed;
-        console.log("next! (" + pattern[playBarNote].distance + "," + interval);
-
+  //      console.log("next! (" + pattern[playBarNote].distance + "," + interval);
       }
     }
 
@@ -296,23 +326,6 @@ $(document).ready(function () {
   function touchHandler(){
     //Assume only one touch/only process one touch even if there's more
     var e = event.targetTouches[0];
-/*    //var touch = event
-    // Is touch close enough to our object?
-    selectedNote=-1;
-    var minDistance = 100000;
-    var tempNoteID = -1;
-    for (var i=0; i< patternSize; i++){
-      var distance = dist(e.pageX, e.pageY, pattern[i].x, pattern[i].y);
-      if ( minDistance >= distance){
-        minDistance = distance;
-        tempNoteID = i;
-      }
-    }
-
-    if(tempNoteID > -1 && minDistance < pattern[tempNoteID].size) {
-      selectedNote = tempNoteID;
-    }
-*/
     //var touch = event
     if ( selectedNote <0 )
       return;
@@ -355,11 +368,13 @@ $(document).ready(function () {
   } 
 
   var leftButtonDown = false;
-  var selectedNote = -1
+  var selectedNote = -1;
+
   $(document).mousedown(function(e){
     // Left mouse button was pressed, set flag
     var minDistance = 100000;
     var tempNoteID = -1;
+
     for (var i=0; i< patternSize; i++){
       var distance = dist(e.pageX, e.pageY, pattern[i].x, pattern[i].y);
       if ( minDistance >= distance){
@@ -367,6 +382,7 @@ $(document).ready(function () {
         tempNoteID = i;
       }
     }
+
     if(tempNoteID > -1 && minDistance < pattern[tempNoteID].size) {
       selectedNote = tempNoteID;
     }
@@ -389,6 +405,7 @@ $(document).ready(function () {
     if(tempNoteID > -1 && minDistance < pattern[tempNoteID].size) {
       selectedNote = tempNoteID;
     }
+
   });
 
   $(document).bind('touchend',function(event){
@@ -399,8 +416,5 @@ $(document).ready(function () {
     // Left mouse button was released, clear flag
     selectedNote = -1;
   });
- 
-  
-  
-  
+
 });
