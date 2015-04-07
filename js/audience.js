@@ -114,5 +114,17 @@ $(document).ready(function () {
     $('#initial-message').bPopup().close();
   });
 
+  var context;
+
+  try {
+    // still needed for Safari
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    // create an AudioContext
+    context = new AudioContext();
+  } catch(e) {
+    // API not supported
+    alert('Web Audio API not supported.');
+  }
+
 
 });
