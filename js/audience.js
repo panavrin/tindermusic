@@ -198,7 +198,7 @@ $(document).ready(function () {
 
   function touchHandler(){
     //Assume only one touch/only process one touch even if there's more
-    var e = event.targetTouches[0];
+/*    var e = event.targetTouches[0];
     //var touch = event
     // Is touch close enough to our object?
     selectedNote=-1;
@@ -215,7 +215,7 @@ $(document).ready(function () {
     if(tempNoteID > -1 && minDistance < pattern[tempNoteID].size) {
       selectedNote = tempNoteID;
     }
-
+*/
     //var touch = event
     if ( selectedNote <0 )
       return;
@@ -265,6 +265,29 @@ $(document).ready(function () {
     }
   });
 
+  $(document).bind('touchstart',function(event){
+    // Left mouse button was pressed, set flag
+    var minDistance = 100000;
+    var tempNoteID = -1;
+    var e = event.targetTouches[0];
+
+    for (var i=0; i< patternSize; i++){
+      var distance = dist(e.pageX, e.pageY, pattern[i].x, pattern[i].y);
+      if ( minDistance >= distance){
+        minDistance = distance;
+        tempNoteID = i;
+      }
+    }
+    
+    if(tempNoteID > -1 && minDistance < pattern[tempNoteID].size) {
+      selectedNote = tempNoteID;
+    }
+  });
+
+  $(document).bind('touchend',function(event){
+      selectedNote = -1;
+  });
+
   $(document).mouseup(function(e){
     // Left mouse button was released, clear flag
     selectedNote = -1;
@@ -280,7 +303,7 @@ $(document).ready(function () {
     canvas.height = window.innerHeight;
 
     for (var i=0; i< patternSize; i++){
-      var note = new Note(70);
+      var note = new Note(window.innerWidth / 24);
       note.setPosition(window.innerWidth * Math.random(), window.innerHeight * Math.random())
       pattern[i] = note;
     }
