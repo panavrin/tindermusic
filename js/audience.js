@@ -201,7 +201,7 @@ $(document).ready(function () {
     var e = event.targetTouches[0];
     //var touch = event
     // Is touch close enough to our object?
-
+    selectedNote=-1;
     var minDistance = 100000;
     var tempNoteID = -1;
     for (var i=0; i< patternSize; i++){
@@ -211,7 +211,7 @@ $(document).ready(function () {
         tempNoteID = i;
       }
     }
-    
+
     if(tempNoteID > -1 && minDistance < pattern[tempNoteID].size) {
       selectedNote = tempNoteID;
     }
