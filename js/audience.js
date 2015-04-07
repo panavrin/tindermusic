@@ -269,7 +269,7 @@ $(document).ready(function () {
     // Left mouse button was pressed, set flag
     var minDistance = 100000;
     var tempNoteID = -1;
-    var e = event.targetTouches[0];
+    var e = event.originalEvent.changedTouches[0];
 
     for (var i=0; i< patternSize; i++){
       var distance = dist(e.pageX, e.pageY, pattern[i].x, pattern[i].y);
