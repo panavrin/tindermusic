@@ -107,7 +107,9 @@ function setNextDivName(divName) {
   actualTindered.appendChild(document.createTextNode(divName));
 }
 
-
+window.onbeforeunload = function(){
+  return "";
+};
 
 $(document).ready(function () {
 
@@ -124,9 +126,6 @@ $(document).ready(function () {
   var pattern = [];
   var patternSize = 4;
 
- 
-
-
   var context;
   // this is moved here to support iOS : http://stackoverflow.com/questions/12517000/no-sound-on-ios-6-web-audio-api
 
@@ -135,8 +134,7 @@ $(document).ready(function () {
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
     // create an AudioContext
     context = new AudioContext();
-
-    alert('Web Audio API supported.');
+   // alert('Web Audio API supported.');
   } catch(e) {
     // API not supported
     alert('Web Audio API not supported.');
@@ -303,7 +301,7 @@ $(document).ready(function () {
     canvas.height = window.innerHeight;
 
     for (var i=0; i< patternSize; i++){
-      var note = new Note(window.innerWidth / 24);
+      var note = new Note(window.innerWidth / 12);
       note.setPosition(window.innerWidth * Math.random(), window.innerHeight * Math.random())
       pattern[i] = note;
     }
