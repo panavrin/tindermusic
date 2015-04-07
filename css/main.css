@@ -45,6 +45,7 @@ h1,h2,h3,h4 {
 	display:block;
 	background-color:black;
 	color:white;
+	visibility: hidden;
 }
 
 .banner_text .img-responsive {
@@ -67,6 +68,7 @@ h1,h2,h3,h4 {
 	display:block;
 	color:white;
 	background-color:black;
+	visibility: hidden;
 }
 
 /*  GROUPING  */
