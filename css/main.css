@@ -9,6 +9,10 @@ body {
 	min-height: 400px;
 }
 
+canvas {
+	border:solid;
+}
+
 h1,h2,h3,h4 {
 	font-family: Helvetica, Geneva, Arial,SunSans-Regular, sans-serif 
 }

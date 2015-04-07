@@ -4,6 +4,34 @@
 // Get an unique pubnub id
 var state = "NAME"; // it is either NAME, EDIT, PLAY
 
+function Note(size){
+  this.size = size;
+  this.x = 0;
+  this.y = 0;
+}
+
+function dist(x1,y1,x2,y2){
+  return Math.sqrt(Math.pow(x1-x2,2) + Math.pow(y1-y2,2));
+}
+
+function drawCircle(ctx, x,y,r) {
+    ctx.beginPath();
+    ctx.arc(x,y,r, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function drawLine(ctx, x1,y1,x2,y2) {
+    ctx.beginPath();
+    ctx.moveTo(x1,y1);
+    ctx.lineTo(x2,y2);
+    ctx.stroke();
+}
+
+Note.prototype.setPosition = function(x,y){
+  this.x = x;
+  this.y = y;
+}
+
 //This segment displays the validation rule for address field.
 function textAlphanumeric(inputtext){
   var alphaExp = /^[0-9a-zA-Z._]+$/;
@@ -80,6 +108,7 @@ function setNextDivName(divName) {
 }
 
 
+
 $(document).ready(function () {
 
   // Parse messages received from PubNub platform
@@ -92,6 +121,11 @@ $(document).ready(function () {
     escClose :false
   });
 */
+  var pattern = [];
+  var patternSize = 4;
+
+ 
+
 
   var context;
   // this is moved here to support iOS : http://stackoverflow.com/questions/12517000/no-sound-on-ios-6-web-audio-api
@@ -132,6 +166,7 @@ $(document).ready(function () {
     osc.connect(context.destination);
     
     osc.start(0);
+    osc.stop(context.currentTime+1);
   });
   
   function detectHit(x1,y1,x2,y2,w,h) {
@@ -147,41 +182,113 @@ $(document).ready(function () {
  
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
- 
+
     ctx.fillStyle = 'blue';
  
+    for (var i=0; i< patternSize; i++){
+    //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
+      drawLine(ctx,pattern[i].x, pattern[i].y, pattern[(i+1)%4].x, pattern[(i+1)%4].y)
+      drawCircle(ctx,pattern[i].x, pattern[i].y, pattern[i].size );
+   //   ctx.fill
+    }
+
+
     // Draw our object in its new position
-    ctx.fillRect(obj.x, obj.y, obj.w, obj.h);
   }
 
   function touchHandler(){
     //Assume only one touch/only process one touch even if there's more
-    var touch = event.targetTouches[0];
+    var e = event.targetTouches[0];
     //var touch = event
-
     // Is touch close enough to our object?
-    if(detectHit(obj.x, obj.y, touch.pageX, touch.pageY, obj.w, obj.h)) {
-      // Assign new coordinates to our object
-      obj.x = touch.pageX;
-      obj.y = touch.pageY;
 
-      // Redraw the canvas
-      draw();
+    var minDistance = 100000;
+    var tempNoteID = -1;
+    for (var i=0; i< patternSize; i++){
+      var distance = dist(e.pageX, e.pageY, pattern[i].x, pattern[i].y);
+      if ( minDistance >= distance){
+        minDistance = distance;
+        tempNoteID = i;
+      }
     }
+    
+    if(tempNoteID > -1 && minDistance < pattern[tempNoteID].size) {
+      selectedNote = tempNoteID;
+    }
+
+    //var touch = event
+    if ( selectedNote <0 )
+      return;
+    // Is touch close enough to our object?
+  
+    // Assign new coordinates to our object
+    pattern[selectedNote].x = e.pageX -  pattern[selectedNote].size/2;
+    pattern[selectedNote].y = e.pageY -  pattern[selectedNote].size/2;
+
+    // Redraw the canvas
+    draw();
     event.preventDefault();
   } 
 
-  function init() {
+  function mouseHandler(e){
+    //Assume only one touch/only process one touch even if there's more
+    //var touch = event
+    if ( selectedNote <0 )
+      return;
+    // Is touch close enough to our object?
+  
+    // Assign new coordinates to our object
+    pattern[selectedNote].x = e.pageX -  pattern[selectedNote].size/2;
+    pattern[selectedNote].y = e.pageY -  pattern[selectedNote].size/2;
+
+    // Redraw the canvas
+    draw();
+  
+    event.preventDefault();
+  } 
+
+  var leftButtonDown = false;
+  var selectedNote = -1
+  $(document).mousedown(function(e){
+    // Left mouse button was pressed, set flag
+    var minDistance = 100000;
+    var tempNoteID = -1;
+    for (var i=0; i< patternSize; i++){
+      var distance = dist(e.pageX, e.pageY, pattern[i].x, pattern[i].y);
+      if ( minDistance >= distance){
+        minDistance = distance;
+        tempNoteID = i;
+      }
+    }
+    if(tempNoteID > -1 && minDistance < pattern[tempNoteID].size) {
+      selectedNote = tempNoteID;
+    }
+  });
+
+  $(document).mouseup(function(e){
+    // Left mouse button was released, clear flag
+    selectedNote = -1;
+  });
  
+  function init() {
+
     // Initialise our object
-    obj = {x:50, y:50, w:70, h:70};
+   // obj = {x:50, y:50, w:70, h:70};
     canvas = $("#patternCanvas")[0];
  
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+
+    for (var i=0; i< patternSize; i++){
+      var note = new Note(70);
+      note.setPosition(window.innerWidth * Math.random(), window.innerHeight * Math.random())
+      pattern[i] = note;
+    }
  
     // Add eventlistener to canvas
     canvas.addEventListener('touchmove',touchHandler, false);
+    canvas.addEventListener('mousemove', mouseHandler, false);
+   
     draw();
   }
   init();
