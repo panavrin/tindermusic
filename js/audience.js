@@ -198,8 +198,8 @@ $(document).ready(function () {
 
   function touchHandler(){
     //Assume only one touch/only process one touch even if there's more
-/*    var e = event.targetTouches[0];
-    //var touch = event
+    var e = event.targetTouches[0];
+/*    //var touch = event
     // Is touch close enough to our object?
     selectedNote=-1;
     var minDistance = 100000;
