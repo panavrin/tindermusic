@@ -287,6 +287,8 @@ $(document).ready(function () {
 
   var animate = function() {
     window.requestAnimFrame(animate);
+
+    if ( soundEnabled){
     var currentTime = context.currentTime;
 
     if (playBarNote < 0 && lastPingTime  + interval > currentTime)
@@ -297,7 +299,7 @@ $(document).ready(function () {
       interval = pattern[playBarNote].distance / speed;
     //  synth.noteon(60, 127, context.currentTime);
     //  synth.noteoff(60,0,context.currentTime + 1);
-      if ( soundEnabled){
+      if (soundEnabled){
         synth.onData('noteon', {"pitch":60, "time":context.currentTime});
         synth.onData('noteoff', {"pitch":60, "time":context.currentTime+1});
       } 
@@ -324,6 +326,8 @@ $(document).ready(function () {
         interval = pattern[playBarNote].distance / speed;
   //      console.log("next! (" + pattern[playBarNote].distance + "," + interval);
       }
+    }
+
     }
 
     draw(); 
