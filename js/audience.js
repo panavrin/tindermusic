@@ -3,6 +3,7 @@
 // PubNub code
 // Get an unique pubnub id
 var state = "NAME"; // it is either NAME, EDIT, PLAY
+var soundEnabled = false;
 
 window.requestAnimFrame = (function(){
 return  window.requestAnimationFrame       || 
@@ -200,26 +201,29 @@ $(document).ready(function () {
     feedbackRight: 0.4,
     crosstalk: 0.25
     }),*/
-    var converb = WX.ConVerb({
-    mix: 1.0,
-    output: 0.5
-    }), 
-    compressor = context.createDynamicsCompressor()
-    , masterGain = context.createGain();
 
-    masterGain.gain.value = 1.0;
+    if ( soundEnabled){
 
-    converb.loadClip({
-      name: 'BigEmptyChurch',
-      url: './sound/960-BigEmptyChurch.mp3'
-    });
+      var converb = WX.ConVerb({
+      mix: 1.0,
+      output: 0.5
+      }), 
+      compressor = context.createDynamicsCompressor()
+      , masterGain = context.createGain();
 
-    //synth.to(compressor);
-    synth.to(converb).to(compressor);
+      masterGain.gain.value = 1.0;
 
-    masterGain.connect(context.destination);
-    compressor.connect(masterGain);
-    
+      converb.loadClip({
+        name: 'BigEmptyChurch',
+        url: './sound/960-BigEmptyChurch.mp3'
+      });
+
+      //synth.to(compressor);
+      synth.to(converb).to(compressor);
+
+      masterGain.connect(context.destination);
+      compressor.connect(masterGain);
+    }
   });
   
   var playBarNote = -1;
@@ -291,9 +295,11 @@ $(document).ready(function () {
       interval = pattern[playBarNote].distance / speed;
     //  synth.noteon(60, 127, context.currentTime);
     //  synth.noteoff(60,0,context.currentTime + 1);
+      if ( soundEnabled){
         synth.onData('noteon', {"pitch":60, "time":context.currentTime});
         synth.onData('noteoff', {"pitch":60, "time":context.currentTime+1});
-  //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
+      } 
+    //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
     }
 
     progress = (currentTime - lastPingTime ) / interval;
@@ -301,9 +307,10 @@ $(document).ready(function () {
       playBarNote++;
       progress = 0;
       lastPingTime = currentTime;
+      if ( soundEnabled){
         synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
         synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
-//      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
+      }//      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
   //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
       
       if (playBarNote == patternSize-1)
