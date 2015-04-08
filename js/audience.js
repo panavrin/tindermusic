@@ -299,6 +299,11 @@ $(document).ready(function () {
       masterGain.connect(context.destination);
       compressor.connect(masterGain);
     }
+
+    var testOsc = context.createOscillator();
+    testOsc.connect(compressor);
+    testOsc.start(0);
+    testOsc.stop(context.currentTime + 2.0);
   });
   
   var playBarNote = -1;
