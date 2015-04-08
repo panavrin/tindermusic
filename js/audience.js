@@ -376,7 +376,7 @@ $(document).ready(function () {
     if (soundEnabled){
       
       var masterGain = context.createGain();
-      masterGain.gain.value = 1.0;
+      masterGain.gain.value = 0.7;
       masterGain.connect(context.destination);
       compressor.connect(masterGain);
       reverb.connect(compressor);
