@@ -159,9 +159,10 @@ $(document).ready(function () {
   if(soundEnabled){
     try {
       // still needed for Safari
-      //window.AudioContext = window.AudioContext || window.webkitAudioContext;
+      window.AudioContext = window.AudioContext || window.webkitAudioContext;
       // create an AudioContext
-      context = WX._ctx
+      //context = WX._ctx
+      context = new window.AudioContext();
      // alert('Web Audio API supported.');
 
     } catch(e) {
@@ -171,7 +172,7 @@ $(document).ready(function () {
 
 
   //  var synth = WX.FMK1();
-    var synth = WX.WXS1();
+   // var synth = WX.WXS1();
   }
 
 
@@ -231,12 +232,10 @@ $(document).ready(function () {
   });
   
   var playBarNote = -1;
-  var intervalBetweenPattern = 1;
+  var intervalBetweenPattern = 1000;
   var interval = intervalBetweenPattern;
   var progress = 0;
-  var lastPingTime;
-  if (soundEnabled)
-    lastPingTime = context.currentTime;
+  var lastPingTime = Date.now();
   var speed = 300; // 300 pixel per second; 
 
   function init() {
@@ -292,47 +291,46 @@ $(document).ready(function () {
   var animate = function() {
     window.requestAnimFrame(animate);
 
-    if ( soundEnabled){
-      var currentTime = context.currentTime;
+    var currentTime = Date.now();
 
-      if (playBarNote < 0 && lastPingTime  + interval > currentTime)
-        return;
-      else if (playBarNote < 0 && lastPingTime + interval <= currentTime){
-        playBarNote++;
-        lastPingTime = currentTime;
-        interval = pattern[playBarNote].distance / speed;
-      //  synth.noteon(60, 127, context.currentTime);
-      //  synth.noteoff(60,0,context.currentTime + 1);
-        if (soundEnabled){
-          synth.onData('noteon', {"pitch":60, "time":context.currentTime});
-          synth.onData('noteoff', {"pitch":60, "time":context.currentTime+1});
-        } 
-      //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
-      }
-
-      progress = (currentTime - lastPingTime ) / interval;
-      if (progress >=1){
-        playBarNote++;
-        progress = 0;
-        lastPingTime = currentTime;
-        if ( soundEnabled){
-          synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
-          synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
-        }//      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
-    //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
-        
-        if (playBarNote == patternSize-1)
-        {
-          interval = intervalBetweenPattern;
-          playBarNote = -1;
-      //    console.log("end! (" + playBarNote + "," + interval);
-        }else{
-          interval = pattern[playBarNote].distance / speed;
-    //      console.log("next! (" + pattern[playBarNote].distance + "," + interval);
-        }
-      }
-
+    if (playBarNote < 0 && lastPingTime  + interval > currentTime)
+      return;
+    else if (playBarNote < 0 && lastPingTime + interval <= currentTime){
+      playBarNote++;
+      lastPingTime = currentTime;
+      interval = pattern[playBarNote].distance / speed;
+    //  synth.noteon(60, 127, context.currentTime);
+    //  synth.noteoff(60,0,context.currentTime + 1);
+      if (soundEnabled){
+        synth.onData('noteon', {"pitch":60, "time":context.currentTime});
+        synth.onData('noteoff', {"pitch":60, "time":context.currentTime+1});
+      } 
+    //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
     }
+
+    progress = (currentTime - lastPingTime ) / interval;
+    if (progress >=1){
+      playBarNote++;
+      progress = 0;
+      lastPingTime = currentTime;
+      if ( soundEnabled){
+        synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
+        synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
+      }//      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
+  //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
+      
+      if (playBarNote == patternSize-1)
+      {
+        interval = intervalBetweenPattern;
+        playBarNote = -1;
+    //    console.log("end! (" + playBarNote + "," + interval);
+      }else{
+        interval = pattern[playBarNote].distance / speed;
+  //      console.log("next! (" + pattern[playBarNote].distance + "," + interval);
+      }
+    }
+
+    
 
     draw(); 
 
