@@ -15,6 +15,7 @@ return  window.requestAnimationFrame       ||
 };
 })();
 
+var pentatonicScale = [0,2,4,7,9];
 
 function Note(size){
   this.size = size;
@@ -190,15 +191,15 @@ $(document).ready(function () {
 
     $('#initial-message').bPopup().close();
 
-    var delay = WX.StereoDelay({
+    /*var delay = WX.StereoDelay({
     mix: 1.0,
     delayTimeLeft: 0.5,
     delayTimeRight: 0.75,
     feedbackLeft: 0.2,
     feedbackRight: 0.4,
     crosstalk: 0.25
-    }),
-    converb = WX.ConVerb({
+    }),*/
+    var converb = WX.ConVerb({
     mix: 1.0,
     output: 0.5
     }), 
@@ -212,15 +213,11 @@ $(document).ready(function () {
       url: './sound/960-BigEmptyChurch.mp3'
     });
 
-    fmk.to(compressor);
-    fmk.to(delay).to(converb).to(compressor);
+    //fmk.to(compressor);
+    fmk.to(converb).to(compressor);
 
     masterGain.connect(context.destination);
     compressor.connect(masterGain);
-    
-
-    
-
     
   });
   
@@ -302,8 +299,8 @@ $(document).ready(function () {
       playBarNote++;
       progress = 0;
       lastPingTime = currentTime;
-      fmk.noteOn(60 + playBarNote * 2, 127, context.currentTime);
-      fmk.noteOff(60 + playBarNote * 2,0,context.currentTime + 1);
+      fmk.noteOn(60 + pentatonicScale[playBarNote], 127, context.currentTime);
+      fmk.noteOff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
       
       if (playBarNote == patternSize-1)
       {
