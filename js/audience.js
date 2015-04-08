@@ -174,7 +174,9 @@ $(document).ready(function () {
 
 
   $("#start").button().css({ margin:'5px'}).click(function(){
-      $("#name_error_msg").text("");
+          alert("start button clicked");
+
+    $("#name_error_msg").text("");
 
     var strScreenName = $("#screenname").val();
     if ( strScreenName.length > 12) {
@@ -187,7 +189,7 @@ $(document).ready(function () {
       return;
     }
 
-    publishMessage("performer", {"type":"create", "my_id":my_id, "nickname": strScreenName});
+    //publishMessage("performer", {"type":"create", "my_id":my_id, "nickname": strScreenName});
 
     $("#name_error_msg").text("Waiting for response...");
 
@@ -202,8 +204,8 @@ $(document).ready(function () {
     crosstalk: 0.25
     }),*/
 
-    if ( soundEnabled){
-
+    if (soundEnabled){
+      alert("soundEnabled");
       var converb = WX.ConVerb({
       mix: 1.0,
       output: 0.5
