@@ -156,21 +156,23 @@ $(document).ready(function () {
 
   var context;
   // this is moved here to support iOS : http://stackoverflow.com/questions/12517000/no-sound-on-ios-6-web-audio-api
+  if(soundEnabled){
+    try {
+      // still needed for Safari
+      //window.AudioContext = window.AudioContext || window.webkitAudioContext;
+      // create an AudioContext
+      context = WX._ctx
+     // alert('Web Audio API supported.');
 
-  try {
-    // still needed for Safari
-    //window.AudioContext = window.AudioContext || window.webkitAudioContext;
-    // create an AudioContext
-    context = WX._ctx
-   // alert('Web Audio API supported.');
+    } catch(e) {
+      // API not supported
+      alert('Web Audio API not supported, please use most recent Chrome (41+), FireFox(31+) or Safari (iOS 7.1+).');
+    }
 
-  } catch(e) {
-    // API not supported
-    alert('Web Audio API not supported, please use most recent Chrome (41+), FireFox(31+) or Safari (iOS 7.1+).');
+
+  //  var synth = WX.FMK1();
+    var synth = WX.WXS1();
   }
-
-//  var synth = WX.FMK1();
-  var synth = WX.WXS1();
 
 
   $("#start").button().css({ margin:'5px'}).click(function(){
