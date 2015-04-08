@@ -236,7 +236,7 @@ $(document).ready(function () {
   var interval = intervalBetweenPattern;
   var progress = 0;
   var lastPingTime = Date.now();
-  var speed = 300; // 300 pixel per second; 
+  var speed = 0.3; // 300 pixel per second (1000 ms); 
 
   function init() {
     // Initialise our object
