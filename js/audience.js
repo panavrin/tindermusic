@@ -234,7 +234,9 @@ $(document).ready(function () {
   var intervalBetweenPattern = 1;
   var interval = intervalBetweenPattern;
   var progress = 0;
-  var lastPingTime = context.currentTime;
+  var lastPingTime;
+  if (soundEnabled)
+    lastPingTime = context.currentTime;
   var speed = 300; // 300 pixel per second; 
 
   function init() {
@@ -291,44 +293,44 @@ $(document).ready(function () {
     window.requestAnimFrame(animate);
 
     if ( soundEnabled){
-    var currentTime = context.currentTime;
+      var currentTime = context.currentTime;
 
-    if (playBarNote < 0 && lastPingTime  + interval > currentTime)
-      return;
-    else if (playBarNote < 0 && lastPingTime + interval <= currentTime){
-      playBarNote++;
-      lastPingTime = currentTime;
-      interval = pattern[playBarNote].distance / speed;
-    //  synth.noteon(60, 127, context.currentTime);
-    //  synth.noteoff(60,0,context.currentTime + 1);
-      if (soundEnabled){
-        synth.onData('noteon', {"pitch":60, "time":context.currentTime});
-        synth.onData('noteoff', {"pitch":60, "time":context.currentTime+1});
-      } 
-    //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
-    }
-
-    progress = (currentTime - lastPingTime ) / interval;
-    if (progress >=1){
-      playBarNote++;
-      progress = 0;
-      lastPingTime = currentTime;
-      if ( soundEnabled){
-        synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
-        synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
-      }//      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
-  //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
-      
-      if (playBarNote == patternSize-1)
-      {
-        interval = intervalBetweenPattern;
-        playBarNote = -1;
-    //    console.log("end! (" + playBarNote + "," + interval);
-      }else{
+      if (playBarNote < 0 && lastPingTime  + interval > currentTime)
+        return;
+      else if (playBarNote < 0 && lastPingTime + interval <= currentTime){
+        playBarNote++;
+        lastPingTime = currentTime;
         interval = pattern[playBarNote].distance / speed;
-  //      console.log("next! (" + pattern[playBarNote].distance + "," + interval);
+      //  synth.noteon(60, 127, context.currentTime);
+      //  synth.noteoff(60,0,context.currentTime + 1);
+        if (soundEnabled){
+          synth.onData('noteon', {"pitch":60, "time":context.currentTime});
+          synth.onData('noteoff', {"pitch":60, "time":context.currentTime+1});
+        } 
+      //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
       }
-    }
+
+      progress = (currentTime - lastPingTime ) / interval;
+      if (progress >=1){
+        playBarNote++;
+        progress = 0;
+        lastPingTime = currentTime;
+        if ( soundEnabled){
+          synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
+          synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
+        }//      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
+    //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
+        
+        if (playBarNote == patternSize-1)
+        {
+          interval = intervalBetweenPattern;
+          playBarNote = -1;
+      //    console.log("end! (" + playBarNote + "," + interval);
+        }else{
+          interval = pattern[playBarNote].distance / speed;
+    //      console.log("next! (" + pattern[playBarNote].distance + "," + interval);
+        }
+      }
 
     }
 
