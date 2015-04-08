@@ -374,7 +374,6 @@ $(document).ready(function () {
     }),*/
 
     if (soundEnabled){
-      
       var masterGain = context.createGain();
       masterGain.gain.value = 0.7;
       masterGain.connect(context.destination);
@@ -394,6 +393,8 @@ $(document).ready(function () {
   var progress = 0;
   var lastPingTime = Date.now();
   var speed = 0.3; // 300 pixel per second (1000 ms); 
+  var canvasHeight;
+
 
   function init() {
     // Initialise our object
@@ -402,7 +403,7 @@ $(document).ready(function () {
  
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-
+    canvasHeight = window.innerHeight;
     for (var i=0; i< patternSize; i++){
       var note = new Note(Math.min(window.innerWidth, window.innerHeight) / 12);
       note.setPosition(window.innerWidth * Math.random(), window.innerHeight * Math.random())
@@ -462,7 +463,9 @@ $(document).ready(function () {
     //  synth.noteoff(60,0,context.currentTime + 1);
       if (soundEnabled){
 
-        var voice  =  new ScissorVoice(60,3,"triangle", 12);
+        var pitch = 12 - pattern[playBarNote].y/canvasHeight *12.0
+
+        var voice  =  new ScissorVoice(60 + pitch,3,"triangle", 12);
            //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
         voice.stop(context.currentTime + intervalInSec * 0.7);
         voice.connect(reverb);
@@ -480,7 +483,7 @@ $(document).ready(function () {
     progress = (currentTime - lastPingTime ) / interval;
     if (progress >=1){
       playBarNote++;
-      var pitch = 60+ pentatonicScale[playBarNote];
+      var pitch = 12 - pattern[playBarNote].y/canvasHeight *12.0
       progress = 0;
 
       lastPingTime = currentTime;
@@ -500,7 +503,7 @@ $(document).ready(function () {
       if ( soundEnabled){
         //synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
         //synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
-        var voice  =  new ScissorVoice(pitch,3,"triangle", 3);
+        var voice  =  new ScissorVoice(pitch + 60,3,"triangle", 3);
            //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
         //console.log("currentTime:" + context.currentTime);
         //voice.stopAt = context.currentTime + intervalInSec * 0.4;
