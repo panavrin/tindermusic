@@ -168,7 +168,8 @@ $(document).ready(function () {
     alert('Web Audio API not supported, please use most recent Chrome (41+), FireFox(31+) or Safari (iOS 7.1+).');
   }
 
-  var fmk = WX.FMK1();
+//  var synth = WX.FMK1();
+  var synth = WX.WXS1();
 
 
   $("#start").button().css({ margin:'5px'}).click(function(){
@@ -213,8 +214,8 @@ $(document).ready(function () {
       url: './sound/960-BigEmptyChurch.mp3'
     });
 
-    //fmk.to(compressor);
-    fmk.to(converb).to(compressor);
+    //synth.to(compressor);
+    synth.to(converb).to(compressor);
 
     masterGain.connect(context.destination);
     compressor.connect(masterGain);
@@ -288,9 +289,10 @@ $(document).ready(function () {
       playBarNote++;
       lastPingTime = currentTime;
       interval = pattern[playBarNote].distance / speed;
-      fmk.noteOn(60, 127, context.currentTime);
-      fmk.noteOff(60,0,context.currentTime + 1);
-      
+    //  synth.noteon(60, 127, context.currentTime);
+    //  synth.noteoff(60,0,context.currentTime + 1);
+        synth.onData('noteon', {"pitch":60, "time":context.currentTime});
+        synth.onData('noteoff', {"pitch":60, "time":context.currentTime+1});
   //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
     }
 
@@ -299,8 +301,10 @@ $(document).ready(function () {
       playBarNote++;
       progress = 0;
       lastPingTime = currentTime;
-      fmk.noteOn(60 + pentatonicScale[playBarNote], 127, context.currentTime);
-      fmk.noteOff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
+        synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
+        synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
+//      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
+  //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
       
       if (playBarNote == patternSize-1)
       {
