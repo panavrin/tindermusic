@@ -335,7 +335,8 @@ $(document).ready(function () {
 //    requestAnimationFrame(animate, renderer.domElement);
   };
 
-  animate();
+  if (soundEnabled)
+    animate();
 
   function touchHandler(){
     //Assume only one touch/only process one touch even if there's more
