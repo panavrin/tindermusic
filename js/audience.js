@@ -6,6 +6,82 @@ var state = "NAME"; // it is either NAME, EDIT, PLAY
 var soundEnabled = true;
 var context;
 var compressor;
+var reverb;
+
+function BufferLoader(context, urlList, callback) {
+  this.context = context;
+  this.urlList = urlList;
+  this.onload = callback;
+  this.bufferList = new Array();
+  this.loadCount = 0;
+}
+BufferLoader.prototype.loadBuffer = function(url, index) {
+  // Load buffer asynchronously
+  var request = new XMLHttpRequest();
+  request.open("GET", url, true);
+  request.responseType = "arraybuffer";
+
+  var loader = this;
+
+  request.onload = function() {
+    // Asynchronously decode the audio file data in request.response
+    loader.context.decodeAudioData(
+      request.response,
+      function(buffer) {
+        if (!buffer) {
+          alert('error decoding file data: ' + url);
+          return;
+        }
+        loader.bufferList[index] = buffer;
+        if (++loader.loadCount == loader.urlList.length)
+          loader.onload(loader.bufferList);
+      },
+      function(error) {
+        console.error('decodeAudioData error', error);
+      }
+    );
+  }
+
+  request.onerror = function() {
+    alert('BufferLoader: XHR error');
+  }
+
+  request.send();
+};
+
+BufferLoader.prototype.load = function() {
+  for (var i = 0; i < this.urlList.length; ++i)
+  this.loadBuffer(this.urlList[i], i);
+};
+
+
+
+function loadSounds(obj, soundMap, callback) {
+  // Array-ify
+  var names = [];
+  var paths = [];
+  for (var name in soundMap) {
+    var path = soundMap[name];
+    names.push(name);
+    paths.push(path);
+  }
+  var bufferLoader = new BufferLoader(context, paths, function(bufferList) {
+    for (var i = 0; i < bufferList.length; i++) {
+      var buffer = bufferList[i];
+      var name = names[i];
+      obj[name] = buffer;
+    }
+    if (callback) {
+      callback();
+    }
+  });
+  bufferLoader.load();
+}
+
+var buffers = {};
+var soundmap = { 'ir1' : './sound/ir1.wav', 'sus1' : './sound/sus_note.wav'};
+//, 'piano1': 'piano_note1_f_sharp.wav', 'indo1' : 'indonesian_gong.wav', 'june_o' : 'june_o.wav', 'reversegate' :'H3000-ReverseGate.mp3'};
+    
 
 function getRandomInt (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -24,12 +100,18 @@ if(soundEnabled){
     context = new window.AudioContext();
    // alert('Web Audio API supported.');
     compressor = context.createDynamicsCompressor()
+    reverb = context.createConvolver();
   } catch(e) {
     // API not supported
     alert('Web Audio API not supported, please use most recent Chrome (41+), FireFox(31+) or Safari (iOS 7.1+).');
   }
 
 }
+
+loadSounds(buffers, soundmap, function(){
+  reverb.buffer = buffers['ir1'];
+});
+
 
 function ADSR(){
     this.node = context.createGain();
@@ -293,17 +375,17 @@ $(document).ready(function () {
 
     if (soundEnabled){
       
-      var  masterGain = context.createGain();
-
+      var masterGain = context.createGain();
       masterGain.gain.value = 1.0;
       masterGain.connect(context.destination);
       compressor.connect(masterGain);
+      reverb.connect(compressor);
     }
 
     var testOsc = context.createOscillator();
     testOsc.connect(compressor);
     testOsc.start(0);
-    testOsc.stop(context.currentTime + 2.0);
+    testOsc.stop(context.currentTime + 0.3);
   });
   
   var playBarNote = -1;
@@ -383,7 +465,7 @@ $(document).ready(function () {
         var voice  =  new ScissorVoice(60,3,"triangle", 12);
            //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
         voice.stop(context.currentTime + intervalInSec * 0.7);
-        voice.connect(compressor);
+        voice.connect(reverb);
         //function(delay, A,D, peakLevel, sustainlevel)
         //function(time, A,D,S,R, peakLevel, sustainlevel){
         voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
@@ -425,7 +507,7 @@ $(document).ready(function () {
         
         voice.stop( context.currentTime + intervalInSec * 0.7);
         
-        voice.connect(compressor);
+        voice.connect(reverb);
         voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
         //function(delay, A,D, peakLevel, sustainlevel)
        // voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
