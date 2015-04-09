@@ -9,7 +9,10 @@ body {
 	min-height: 400px;
 }
 
-.responsive_font_size{
+.responsive_font_size_4{
+	font-size: 4vw;
+}
+.responsive_font_size_5{
 	font-size: 5vw;
 }
 h1,h2,h3,h4 {
