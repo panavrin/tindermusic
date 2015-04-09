@@ -208,6 +208,8 @@ var pentatonicScale = [0,2,4,7,9];
 var majorScale = [0,2,4,5,7,9,11,12];
 var minorScale = [0,2,3,5,7,8,10,12];
 var selectedScale = majorScale;
+var baseNote = 60;
+
 function Note(size){
   this.size = size;
   this.x = 0;
@@ -347,7 +349,12 @@ $(document).ready(function () {
   // this is moved here to support iOS : http://stackoverflow.com/questions/12517000/no-sound-on-ios-6-web-audio-api
   
 
+  $("#random").button().click(randomizeNote);
 
+  $("#update").button().click(function(){
+    alert("updated!");
+  });
+  
   $("#start").button().css({ margin:'5px'}).click(function(){
         
     $("#name_error_msg").text("");
@@ -400,15 +407,9 @@ $(document).ready(function () {
   var speed = 0.3; // 300 pixel per second (1000 ms); 
   var canvasHeight;
 
-
-  function init() {
-    // Initialise our object
-   // obj = {x:50, y:50, w:70, h:70};
+  function randomizeNote(){
     canvas = $("#patternCanvas")[0];
  
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight * 0.9;
-    canvasHeight = canvas.height;
     for (var i=0; i< patternSize; i++){
       var note = new Note(Math.min(canvas.width, canvasHeight) / 12);
       note.setPosition(canvas.width * Math.random(), canvasHeight * Math.random())
@@ -418,6 +419,18 @@ $(document).ready(function () {
     for (var i=0; i< patternSize-1; i++){
       pattern[i].distance = dist(pattern[i].x,pattern[i].y,pattern[i+1].x,pattern[i+1].y);
     }
+  }
+  function init() {
+    // Initialise our object
+   // obj = {x:50, y:50, w:70, h:70};
+    canvas = $("#patternCanvas")[0];
+ 
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight * 0.9;
+    canvasHeight = canvas.height;
+    
+    randomizeNote();
+
     // Add eventlistener to canvas
     canvas.addEventListener('touchmove',touchHandler, false);
     canvas.addEventListener('mousemove', mouseHandler, false);
@@ -487,7 +500,7 @@ $(document).ready(function () {
         var numDetune = Math.floor(pattern[playBarNote].x/canvas.width * detune );
         var pitchIndex = Math.floor((1 - pattern[playBarNote].y/canvasHeight) * selectedScale.length);
         var octave = Math.floor(pitchIndex / selectedScale.length);
-        var voice  =  new ScissorVoice(60 + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
+        var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
            //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
         voice.stop(context.currentTime + intervalInSec * 0.7);
         voice.connect(reverb);
@@ -528,7 +541,7 @@ $(document).ready(function () {
       if ( soundEnabled){
         //synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
         //synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
-        var voice  =  new ScissorVoice(60 + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
+        var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
                   //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
         //console.log("currentTime:" + context.currentTime);
         //voice.stopAt = context.currentTime + intervalInSec * 0.4;
