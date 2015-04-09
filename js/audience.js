@@ -202,7 +202,9 @@ return  window.requestAnimationFrame       ||
 })();
 
 var pentatonicScale = [0,2,4,7,9];
-
+var majorScale = [0,2,4,5,7,9,11,12];
+var minorScale = [0,2,3,5,7,8,10,12];
+var selectedScale = majorScale;
 function Note(size){
   this.size = size;
   this.x = 0;
@@ -429,7 +431,19 @@ $(document).ready(function () {
  
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
- 
+    for (var i=0; i< selectedScale.length; i++){
+      ctx.beginPath();
+      ctx.rect(0, i * canvas.height/selectedScale.length, canvas.width, canvas.height/selectedScale.length);
+      if ( i % 2 == 0)
+        ctx.fillStyle = 'white';
+      else
+        ctx.fillStyle = '#eeddfe';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#661A4C';
+      ctx.stroke();
+    }
+    
     for (var i=0; i< patternSize; i++){
     //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
       drawCircle(ctx,pattern[i].x, pattern[i].y, pattern[i].size, '#CB59FF' );
@@ -463,9 +477,10 @@ $(document).ready(function () {
     //  synth.noteoff(60,0,context.currentTime + 1);
       if (soundEnabled){
 
-        var pitch = 12 - pattern[playBarNote].y/canvasHeight *12.0
 
-        var voice  =  new ScissorVoice(60 + pitch,3,"triangle", 12);
+        var pitchIndex = Math.floor((1 - pattern[playBarNote].y/canvasHeight) * selectedScale.length);
+        var octave = Math.floor(pitchIndex / selectedScale.length);
+        var voice  =  new ScissorVoice(60 + selectedScale[pitchIndex] + octave * 12,3,"triangle", 12);
            //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
         voice.stop(context.currentTime + intervalInSec * 0.7);
         voice.connect(reverb);
@@ -483,9 +498,10 @@ $(document).ready(function () {
     progress = (currentTime - lastPingTime ) / interval;
     if (progress >=1){
       playBarNote++;
-      var pitch = 12 - pattern[playBarNote].y/canvasHeight *12.0
       progress = 0;
-
+      var pitchIndex = Math.floor((1 - pattern[playBarNote].y/canvasHeight) * selectedScale.length);
+      var octave = Math.floor(pitchIndex / selectedScale.length);
+        
       lastPingTime = currentTime;
       //      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
   //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
@@ -503,7 +519,7 @@ $(document).ready(function () {
       if ( soundEnabled){
         //synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
         //synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
-        var voice  =  new ScissorVoice(pitch + 60,3,"triangle", 3);
+        var voice  =  new ScissorVoice(60 + selectedScale[pitchIndex] + octave * 12,3,"triangle", 12);
            //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
         //console.log("currentTime:" + context.currentTime);
         //voice.stopAt = context.currentTime + intervalInSec * 0.4;
