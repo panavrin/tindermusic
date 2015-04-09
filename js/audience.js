@@ -3,7 +3,195 @@
 // PubNub code
 // Get an unique pubnub id
 var state = "NAME"; // it is either NAME, EDIT, PLAY
-var soundEnabled = false;
+var soundEnabled = true;
+var context;
+var compressor;
+var reverb;
+
+function BufferLoader(context, urlList, callback) {
+  this.context = context;
+  this.urlList = urlList;
+  this.onload = callback;
+  this.bufferList = new Array();
+  this.loadCount = 0;
+}
+BufferLoader.prototype.loadBuffer = function(url, index) {
+  // Load buffer asynchronously
+  var request = new XMLHttpRequest();
+  request.open("GET", url, true);
+  request.responseType = "arraybuffer";
+
+  var loader = this;
+
+  request.onload = function() {
+    // Asynchronously decode the audio file data in request.response
+    loader.context.decodeAudioData(
+      request.response,
+      function(buffer) {
+        if (!buffer) {
+          alert('error decoding file data: ' + url);
+          return;
+        }
+        loader.bufferList[index] = buffer;
+        if (++loader.loadCount == loader.urlList.length)
+          loader.onload(loader.bufferList);
+      },
+      function(error) {
+        console.error('decodeAudioData error', error);
+      }
+    );
+  }
+
+  request.onerror = function() {
+    alert('BufferLoader: XHR error');
+  }
+
+  request.send();
+};
+
+BufferLoader.prototype.load = function() {
+  for (var i = 0; i < this.urlList.length; ++i)
+  this.loadBuffer(this.urlList[i], i);
+};
+
+
+
+function loadSounds(obj, soundMap, callback) {
+  // Array-ify
+  var names = [];
+  var paths = [];
+  for (var name in soundMap) {
+    var path = soundMap[name];
+    names.push(name);
+    paths.push(path);
+  }
+  var bufferLoader = new BufferLoader(context, paths, function(bufferList) {
+    for (var i = 0; i < bufferList.length; i++) {
+      var buffer = bufferList[i];
+      var name = names[i];
+      obj[name] = buffer;
+    }
+    if (callback) {
+      callback();
+    }
+  });
+  bufferLoader.load();
+}
+
+var buffers = {};
+var soundmap = { 'ir1' : './sound/ir1.wav', 'sus1' : './sound/sus_note.wav'};
+//, 'piano1': 'piano_note1_f_sharp.wav', 'indo1' : 'indonesian_gong.wav', 'june_o' : 'june_o.wav', 'reversegate' :'H3000-ReverseGate.mp3'};
+    
+
+function getRandomInt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function noteNum2Freq(num){
+    return Math.pow(2,(num-57)/12) * 440 
+}
+
+if(soundEnabled){
+  try {
+    // still needed for Safari
+    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    // create an AudioContext
+    //context = WX._ctx
+    context = new window.AudioContext();
+   // alert('Web Audio API supported.');
+    compressor = context.createDynamicsCompressor()
+    reverb = context.createConvolver();
+  } catch(e) {
+    // API not supported
+    alert('Web Audio API not supported, please use most recent Chrome (41+), FireFox(31+) or Safari (iOS 7.1+).');
+  }
+
+}
+
+loadSounds(buffers, soundmap, function(){
+  reverb.buffer = buffers['ir1'];
+});
+
+
+function ADSR(){
+    this.node = context.createGain();
+    this.node.gain.value = 0.0;
+}
+
+ADSR.prototype.noteOn= function(delay, A,D, peakLevel, sustainlevel){
+    peakLevel = peakLevel || 1;
+    sustainlevel = sustainlevel || 0.3;
+    
+    this.node.gain.linearRampToValueAtTime(0.0,delay + context.currentTime);
+    this.node.gain.linearRampToValueAtTime(peakLevel,delay + context.currentTime + A); // Attack
+    this.node.gain.linearRampToValueAtTime(sustainlevel,delay + context.currentTime + A + D);// Decay
+}
+
+ADSR.prototype.noteOff= function(delay, R, sustainlevel){
+    sustainlevel = sustainlevel || 0.1;
+
+    this.node.gain.linearRampToValueAtTime(sustainlevel,delay + context.currentTime );// Release   
+    this.node.gain.linearRampToValueAtTime(0.0,delay + context.currentTime + R);// Release   
+    
+}
+
+ADSR.prototype.play= function(delay, A,D,S,R, peakLevel, sustainlevel){
+  this.node.gain.linearRampToValueAtTime(0.0,delay + context.currentTime);
+  this.node.gain.linearRampToValueAtTime(peakLevel,delay + context.currentTime + A); // Attack
+  this.node.gain.linearRampToValueAtTime(sustainlevel,delay + context.currentTime + A + D);// Decay
+  this.node.gain.linearRampToValueAtTime(sustainlevel,delay + context.currentTime + A + D + S);// sustain.
+  this.node.gain.linearRampToValueAtTime(0.0,delay + context.currentTime + A + D + S + R);// Release   
+}
+var index = 0;
+
+function ScissorVoice(noteNum, numOsc, oscType, detune){
+  this.output  = new ADSR();
+  this.maxGain = 1 / numOsc;
+  this.noteNum = noteNum;
+  this.frequency = noteNum2Freq(noteNum);
+  this.oscs = [];
+  this.index = index++;
+  this.time = context.currentTime;
+  for (var i=0; i< numOsc; i++){
+    var osc = context.createOscillator();
+    if ( oscType.length === "undefined")
+      osc.type = oscType;
+    else
+      osc.type = oscType[i%oscType.length];
+    osc.frequency.value = this.frequency;
+    osc.detune.value = -detune + i * 2 * detune / (numOsc - 1);
+    osc.start(context.currentTime);
+    osc.connect(this.output.node);
+    this.oscs.push(osc);
+  }
+  //console.log("played(" + index +") " + noteNum + " at " + context.currentTime);
+   //   console.log("started : " +this.noteNum);
+
+}
+
+ScissorVoice.prototype.stop = function(time){
+  //time =  time | context.currentTime;
+  var it = this;
+  setTimeout(function(){
+ //   console.log("stopped(" + index +") " +it.noteNum + " at " +context.currentTime);
+    for (var i=0; i<it.oscs.length; i++){
+        it.oscs[i].disconnect();
+    }
+  }, Math.floor((time-context.currentTime)*1000));
+}
+
+ScissorVoice.prototype.detune = function(detune){
+    for (var i=0; i<this.oscs.length; i++){
+        //this.oscs[i].frequency.value = noteNum2Freq(noteNum);
+        this.oscs[i].detune.value -= detune;
+    }
+}
+
+ScissorVoice.prototype.connect = function(target){
+  this.output.node.connect(target);
+}   
+
+
 
 window.requestAnimFrame = (function(){
 return  window.requestAnimationFrame       || 
@@ -17,6 +205,10 @@ return  window.requestAnimationFrame       ||
 })();
 
 var pentatonicScale = [0,2,4,7,9];
+var majorScale = [0,2,4,5,7,9,11,12];
+var minorScale = [0,2,3,5,7,8,10,12];
+var selectedScale = majorScale;
+var baseNote = 60;
 
 function Note(size){
   this.size = size;
@@ -138,8 +330,41 @@ window.onbeforeunload = function(){
   return "";
 };
 
+var pattern = [];
+var patternSize = 5;
+
+function randomizeNote(){
+  canvas = $("#patternCanvas")[0];
+
+  for (var i=0; i< patternSize; i++){
+    var note = new Note(Math.min(canvas.width, canvas.height) / 12);
+    note.setPosition(canvas.width * Math.random(), canvas.height * Math.random())
+    pattern[i] = note;
+  }
+
+  for (var i=0; i< patternSize-1; i++){
+    pattern[i].distance = dist(pattern[i].x,pattern[i].y,pattern[i+1].x,pattern[i+1].y);
+  }
+}
+
+function update(){
+ // alert("update!")
+  $("#submit").css("visibility", "hidden");
+  $("#bottom_banner").css("visibility", "visible");
+  $("#top").css("visibility", "visible");
+}
+
 
 $(document).ready(function () {
+
+
+  // resize images 
+  $("#submit").css("visibility", "visible");
+
+  $(".tenpercent").each(function() {
+    var height =  window.innerHeight * 0.08; // Max width for the image
+    $(this).css("height", height);
+  });
 
   // Parse messages received from PubNub platform
   
@@ -151,34 +376,12 @@ $(document).ready(function () {
     escClose :false
   });
 */
-  var pattern = [];
-  var patternSize = 5;
 
-  var context;
   // this is moved here to support iOS : http://stackoverflow.com/questions/12517000/no-sound-on-ios-6-web-audio-api
-  if(soundEnabled){
-    try {
-      // still needed for Safari
-      window.AudioContext = window.AudioContext || window.webkitAudioContext;
-      // create an AudioContext
-      //context = WX._ctx
-      context = new window.AudioContext();
-     // alert('Web Audio API supported.');
-
-    } catch(e) {
-      // API not supported
-      alert('Web Audio API not supported, please use most recent Chrome (41+), FireFox(31+) or Safari (iOS 7.1+).');
-    }
-
-
-  //  var synth = WX.FMK1();
-   // var synth = WX.WXS1();
-  }
-
+  
 
   $("#start").button().css({ margin:'5px'}).click(function(){
-          alert("start button clicked");
-
+        
     $("#name_error_msg").text("");
 
     var strScreenName = $("#screenname").val();
@@ -208,27 +411,17 @@ $(document).ready(function () {
     }),*/
 
     if (soundEnabled){
-      alert("soundEnabled");
-      var converb = WX.ConVerb({
-      mix: 1.0,
-      output: 0.5
-      }), 
-      compressor = context.createDynamicsCompressor()
-      , masterGain = context.createGain();
-
-      masterGain.gain.value = 1.0;
-
-      converb.loadClip({
-        name: 'BigEmptyChurch',
-        url: './sound/960-BigEmptyChurch.mp3'
-      });
-
-      //synth.to(compressor);
-      synth.to(converb).to(compressor);
-
+      var masterGain = context.createGain();
+      masterGain.gain.value = 0.7;
       masterGain.connect(context.destination);
       compressor.connect(masterGain);
+      reverb.connect(compressor);
     }
+
+    var testOsc = context.createOscillator();
+    testOsc.connect(compressor);
+    testOsc.start(0);
+    testOsc.stop(context.currentTime + 0.3);
   });
   
   var playBarNote = -1;
@@ -237,24 +430,20 @@ $(document).ready(function () {
   var progress = 0;
   var lastPingTime = Date.now();
   var speed = 0.3; // 300 pixel per second (1000 ms); 
+  var canvasHeight;
 
+  
   function init() {
     // Initialise our object
    // obj = {x:50, y:50, w:70, h:70};
     canvas = $("#patternCanvas")[0];
  
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.height = window.innerHeight * 0.9;
+    canvasHeight = canvas.height;
+    
+    randomizeNote();
 
-    for (var i=0; i< patternSize; i++){
-      var note = new Note(Math.min(window.innerWidth, window.innerHeight) / 12);
-      note.setPosition(window.innerWidth * Math.random(), window.innerHeight * Math.random())
-      pattern[i] = note;
-    }
-
-    for (var i=0; i< patternSize-1; i++){
-      pattern[i].distance = dist(pattern[i].x,pattern[i].y,pattern[i+1].x,pattern[i+1].y);
-    }
     // Add eventlistener to canvas
     canvas.addEventListener('touchmove',touchHandler, false);
     canvas.addEventListener('mousemove', mouseHandler, false);
@@ -271,7 +460,19 @@ $(document).ready(function () {
  
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
- 
+    for (var i=0; i< selectedScale.length; i++){
+      ctx.beginPath();
+      ctx.rect(0, i * canvas.height/selectedScale.length, canvas.width, canvas.height/selectedScale.length);
+      if ( i % 2 == 0)
+        ctx.fillStyle = 'white';
+      else
+        ctx.fillStyle = '#eeddfe';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#661A4C';
+      ctx.stroke();
+    }
+    
     for (var i=0; i< patternSize; i++){
     //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
       drawCircle(ctx,pattern[i].x, pattern[i].y, pattern[i].size, '#CB59FF' );
@@ -292,31 +493,52 @@ $(document).ready(function () {
     window.requestAnimFrame(animate);
 
     var currentTime = Date.now();
-
+    var intervalInSec = interval/1000;
+    var oscType = ["sine","sine","triangle","triangle","sawtooth","square","triangle","sawtooth","square" ];
+    //var oscType = ["triangle"];
+    var detune = 20;
+    var maxNumOsc = oscType.length;
     if (playBarNote < 0 && lastPingTime  + interval > currentTime)
       return;
     else if (playBarNote < 0 && lastPingTime + interval <= currentTime){
       playBarNote++;
       lastPingTime = currentTime;
       interval = pattern[playBarNote].distance / speed;
+      intervalInSec = interval/1000;
     //  synth.noteon(60, 127, context.currentTime);
     //  synth.noteoff(60,0,context.currentTime + 1);
       if (soundEnabled){
-        synth.onData('noteon', {"pitch":60, "time":context.currentTime});
-        synth.onData('noteoff', {"pitch":60, "time":context.currentTime+1});
-      } 
-    //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
-    }
 
+        var numOsc = Math.floor(pattern[playBarNote].x/canvas.width * maxNumOsc )  + 1;
+        var numDetune = Math.floor(pattern[playBarNote].x/canvas.width * detune );
+        var pitchIndex = Math.floor((1 - pattern[playBarNote].y/canvasHeight) * selectedScale.length);
+        var octave = Math.floor(pitchIndex / selectedScale.length);
+        var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
+           //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
+        voice.stop(context.currentTime + intervalInSec * 0.7);
+        voice.connect(reverb);
+        //function(delay, A,D, peakLevel, sustainlevel)
+        //function(time, A,D,S,R, peakLevel, sustainlevel){
+        voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
+
+        //voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
+        // ADSR.prototype.noteOff= function(delay, R, sustainlevel){
+        // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);    
+        
+    //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
+      }
+    }
     progress = (currentTime - lastPingTime ) / interval;
-    if (progress >=1){
+    if (progress >=0.97){
       playBarNote++;
       progress = 0;
+      var numOsc = Math.floor(pattern[playBarNote].x/canvas.width * maxNumOsc )  + 1;
+        var numDetune = Math.floor(pattern[playBarNote].x/canvas.width * detune );
+        var pitchIndex = Math.floor((1 - pattern[playBarNote].y/canvasHeight) * selectedScale.length);
+        var octave = Math.floor(pitchIndex / selectedScale.length);
+          
       lastPingTime = currentTime;
-      if ( soundEnabled){
-        synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
-        synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
-      }//      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
+      //      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
   //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
       
       if (playBarNote == patternSize-1)
@@ -327,6 +549,25 @@ $(document).ready(function () {
       }else{
         interval = pattern[playBarNote].distance / speed;
   //      console.log("next! (" + pattern[playBarNote].distance + "," + interval);
+      }
+      intervalInSec = interval/1000;
+      if ( soundEnabled){
+        //synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
+        //synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
+        var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
+                  //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
+        //console.log("currentTime:" + context.currentTime);
+        //voice.stopAt = context.currentTime + intervalInSec * 0.4;
+        
+        voice.stop( context.currentTime + intervalInSec * 0.7);
+        
+        voice.connect(reverb);
+        voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
+        //function(delay, A,D, peakLevel, sustainlevel)
+       // voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
+        // ADSR.prototype.noteOff= function(delay, R, sustainlevel){
+       // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);    
+        
       }
     }
 

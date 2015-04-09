@@ -1,6 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html>
-
 	<head>
 		<meta charset="UTF-8">
 		<title>
@@ -22,54 +21,67 @@
 
 	</head>
 
-	<body onload="getNextDivName()">
+	<body><!-- onload="getNextDivName()">-->
 
-		<div class = "top_banner">
+		<div id = "top" class = "top_banner">
 			<div class="section group height_100">
 				<div class="col-left span_2_of_4 center border height_100">
 					<div class = "banner">
-						<span class = "banner_text"><h1 id="username">ID:snaglee</h1></span>
+						<span class = "banner_text responsive_font_size_4">ID:<span id="screenname_display">snaglee</span></span>
 					</div>
 				</div>
 				<div class="col-right span_2_of_4 center border height_100">
 					<div class = "banner">
-						<span class = "banner_text"><h1>update</h1></span>
+						<span class = "banner_text"><img src="./images/modify_w.png" class = "tenpercent" onclick="randomizeNote()"></span>
 					</div>
 				</div>
 			</div>
 		</div>
-
-		
         <canvas id="patternCanvas" class =  "border">
         Sorry, canvas not supported
         </canvas>
-        <div class = "height_100">
-            <!--<div class="section group border height_25">
-                <div class="col span_2_of_4 center border height_100">
-                Sang
+        <div id= "submit" class = "bottom_banner2">
+            <div class="section group height_100">
+                <div class="col-left span_2_of_4 center border height_100 ">
+                    <div class = "banner">
+                        <span class = "banner_text responsive_font_size_4"><img src="./images/randomize.png" class = "tenpercent" onclick="randomizeNote()"></span>
+                    </div>
                 </div>
-                <div class="col span_2_of_4 center border height_100">
-                Edit
+                <div class="col-right span_2_of_4 center border height_100 ">
+                    <div class = "banner">
+                        <span class = "banner_text responsive_font_size_4"><img src="./images/play.png" class = "tenpercent" onclick="update()"></span>
+                    </div>
                 </div>
-            </div>-->
-            <!--<div class="section group border height_100">
+            </div>
+        </div>
+
+     <!--   <div id = "submit" class = "bottom_pane">
+            <div class = "buttons center responsive_font_size_4">
+                <button id = "random">Randomize!</button> 
+                <button id = "update">Submit your pattern!</button> 
+            </div> 
+        </div> -->
+       <!-- <div class = "height_100">
+            
+            <div class="section group border height_100">
                 <div class="col span_4_of_4 center border height_100">
-                --> <div class="banner">
+                 <div class="banner">
                         <span class="banner_text"><h1 id="tindered">NoNaMe</h1></span>
                     </div>
-            <!--    </div>
-            </div>-->
-        </div>
-		<div class = "bottom_banner">
+                </div>
+            </div>
+        </div>-->
+
+		<div id = "bottom_banner" class = "bottom_banner2">
 			<div class="section group height_100">
 				<div class="col-left span_2_of_4 center border height_100 ">
 					<div class = "banner">
-						<span class = "banner_text"><img  src="./images/heart.png" height="120px"></span>
+						<span class = "banner_text"><img  src="./images/heart.png" class = "tenpercent"></span>
 					</div>
 				</div>
 				<div class="col-right span_2_of_4 center border height_100 ">
 					<div class = "banner">
-						<span class = "banner_text"><img onclick="getNextDivName()" src="./images/close.png" height="120px"></span>
+						<span class = "banner_text"><img onclick="getNextDivName()" src="./images/close.png" class = "tenpercent"></span>
 					</div>
 				</div>
 			</div>
@@ -77,13 +89,13 @@
 
         <div id="initial-message" class="dialog-message" >
             <div>   
-                <h4>C[rowd] in C[loud]</h4>
-                <p>Please type your screen name for participation. (ver 3)</p>
+                <h1>Crowd in C[loud]</h1>
+                <div class="responsive_font_size_4">Please type your screen name for participation. (ver 3)</div>
                 <div id  = "name_error_msg" class = "red"></div>
                 <div class = "buttons center">
-                    <input type="text" name="screenname" id="screenname" value="" class="ui-widget-content ui-corner-all" />
+                    <input type="text" name="screenname" id="screenname" value="" class="ui-widget-content ui-corner-all responsive_font_size_4" />
                     <br/><br/>
-                    <button id = "start">Start</button> 
+                    <button id = "start" class ="responsive_font_size_5">Start</button> 
                 </div>
             </div>
         </div>
