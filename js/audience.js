@@ -333,6 +333,13 @@ window.onbeforeunload = function(){
 
 $(document).ready(function () {
 
+
+// resize images 
+
+  $(".tenpercent").each(function() {
+    var height =  window.innerHeight * 0.09; // Max width for the image
+    $(this).css("height", height);
+  });
   // Parse messages received from PubNub platform
   
 /* $('#initial-message').bPopup({
