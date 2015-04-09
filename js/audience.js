@@ -516,7 +516,7 @@ $(document).ready(function () {
       }
     }
     progress = (currentTime - lastPingTime ) / interval;
-    if (progress >=1){
+    if (progress >=0.97){
       playBarNote++;
       progress = 0;
       var numOsc = Math.floor(pattern[playBarNote].x/canvas.width * maxNumOsc )  + 1;
