@@ -154,7 +154,10 @@ function ScissorVoice(noteNum, numOsc, oscType, detune){
   this.time = context.currentTime;
   for (var i=0; i< numOsc; i++){
     var osc = context.createOscillator();
-    osc.type = oscType;
+    if ( oscType.length === "undefined")
+      osc.type = oscType;
+    else
+      osc.type = oscType[i%oscType.length];
     osc.frequency.value = this.frequency;
     osc.detune.value = -detune + i * 2 * detune / (numOsc - 1);
     osc.start(context.currentTime);
@@ -465,7 +468,10 @@ $(document).ready(function () {
 
     var currentTime = Date.now();
     var intervalInSec = interval/1000;
-
+    var oscType = ["sine","sine","triangle","triangle","sawtooth","square","triangle","sawtooth","square" ];
+    //var oscType = ["triangle"];
+    var detune = 20;
+    var maxNumOsc = oscType.length;
     if (playBarNote < 0 && lastPingTime  + interval > currentTime)
       return;
     else if (playBarNote < 0 && lastPingTime + interval <= currentTime){
@@ -477,10 +483,11 @@ $(document).ready(function () {
     //  synth.noteoff(60,0,context.currentTime + 1);
       if (soundEnabled){
 
-
+        var numOsc = Math.floor(pattern[playBarNote].x/canvas.width * maxNumOsc )  + 1;
+        var numDetune = Math.floor(pattern[playBarNote].x/canvas.width * detune );
         var pitchIndex = Math.floor((1 - pattern[playBarNote].y/canvasHeight) * selectedScale.length);
         var octave = Math.floor(pitchIndex / selectedScale.length);
-        var voice  =  new ScissorVoice(60 + selectedScale[pitchIndex] + octave * 12,3,"triangle", 12);
+        var voice  =  new ScissorVoice(60 + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
            //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
         voice.stop(context.currentTime + intervalInSec * 0.7);
         voice.connect(reverb);
@@ -499,9 +506,11 @@ $(document).ready(function () {
     if (progress >=1){
       playBarNote++;
       progress = 0;
-      var pitchIndex = Math.floor((1 - pattern[playBarNote].y/canvasHeight) * selectedScale.length);
-      var octave = Math.floor(pitchIndex / selectedScale.length);
-        
+      var numOsc = Math.floor(pattern[playBarNote].x/canvas.width * maxNumOsc )  + 1;
+        var numDetune = Math.floor(pattern[playBarNote].x/canvas.width * detune );
+        var pitchIndex = Math.floor((1 - pattern[playBarNote].y/canvasHeight) * selectedScale.length);
+        var octave = Math.floor(pitchIndex / selectedScale.length);
+          
       lastPingTime = currentTime;
       //      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
   //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
@@ -519,8 +528,8 @@ $(document).ready(function () {
       if ( soundEnabled){
         //synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
         //synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
-        var voice  =  new ScissorVoice(60 + selectedScale[pitchIndex] + octave * 12,3,"triangle", 12);
-           //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
+        var voice  =  new ScissorVoice(60 + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
+                  //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
         //console.log("currentTime:" + context.currentTime);
         //voice.stopAt = context.currentTime + intervalInSec * 0.4;
         
