@@ -410,8 +410,8 @@ $(document).ready(function () {
     canvas.height = window.innerHeight * 0.9;
     canvasHeight = canvas.height;
     for (var i=0; i< patternSize; i++){
-      var note = new Note(Math.min(window.innerWidth, window.innerHeight) / 12);
-      note.setPosition(window.innerWidth * Math.random(), window.innerHeight * Math.random())
+      var note = new Note(Math.min(canvas.width, canvasHeight) / 12);
+      note.setPosition(canvas.width * Math.random(), canvasHeight * Math.random())
       pattern[i] = note;
     }
 
