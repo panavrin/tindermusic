@@ -1,5 +1,7 @@
-// Main Code
+// main code
 
+  var arrayUniqueNicknames = new Array();
+  var arrayPaths = new Array();
   var arrayUnselectedDivs = new Array();
   var arraySelectedDivs = new Array();
 
@@ -17,82 +19,19 @@
     divUsername.appendChild(document.createTextNode("username: "+my_id));
   }
 
-  // remove a div from divSelecteds and add to divUnselecteds
-  function setAsUnselected(divObject) {
+// PubNub code
 
-    divSelecteds.removeChild(divObject);
-    divUnselecteds.appendChild(divObject);
-
-    divObject.className = 'unselected';
-    divObject.onclick = function() {
-      setAsSelected(this);
-    };
-
-    arraySelectedDivs.splice(divObject.id,1);
-    for (i = divObject.id; i < arraySelectedDivs.length; i++) {
-      arraySelectedDivs[i].id = i;
-    }
-
-    divObject.id = arrayUnselectedDivs.length;
-    arrayUnselectedDivs.push(divObject);
-
-  }
-
-  // remove a div from divUnselecteds and add to divSelecteds
-  function setAsSelected(divObject) {
-
-    divUnselecteds.removeChild(divObject);
-    divSelecteds.insertBefore(divObject, divSelecteds.firstChild);
-
-    divObject.className = 'selected';
-    divObject.onclick = function() {
-      setAsUnselected(this);
-    };
-
-    arrayUnselectedDivs.splice(divObject.id,1);
-    for (i = divObject.id; i < arrayUnselectedDivs.length; i++) {
-      arrayUnselectedDivs[i].id = i;
-    }
-
-    divObject.id = 0;
-    arraySelectedDivs.unshift(divObject);
-    for (i = 1; i < arraySelectedDivs.length; i++) {
-      arraySelectedDivs[i].id = i;
-    }
-  }
-
-  // add a new object to divUnselecteds
-  // a random number is used as name when no argument is provided.
-  function addNewUnselected(name) {
-    if (!name) {
-      name = Math.random();
-    }
-
-    var newDiv = document.createElement('div');
-    newDiv.name = name;
-    newDiv.className = 'unselected';
-    newDiv.appendChild(document.createTextNode(name));
-    newDiv.onclick = function() {
-      setAsSelected(this);
-    }
-    newDiv.id = arrayUnselectedDivs.length;
-    arrayUnselectedDivs.push(newDiv);
-    divUnselecteds.appendChild(newDiv);
-  }
-
-// PubNub Code
-
-  // Get an unique pubnub id
+  // get an unique pubnub id
   var my_id = PUBNUB.uuid();
 
-  // Initialize with Publish & Subscribe Keys
+  // initialize with Publish & Subscribe Keys
   var pubnub = PUBNUB.init({
       publish_key: 'demo',
       subscribe_key: 'demo',
       uuid: my_id
   });
 
-  // Subscribe to a channel
+  // subscribe to a channel
   pubnub.subscribe({
       channel: 'performer',
       presence: function(m){console.log(m)},
@@ -103,39 +42,44 @@
       }
   });
 
-  // Parse messages received from PubNub platform
+  // parse messages received from PubNub platform
   function parseMessage( message ) {
-      if (typeof message.nextToDivName !== 'undefined') {
+      if (typeof message.type !== 'undefined') {
+
+        switch(message.type) {
+          case 'create':
+              create(message.my_id, message.nickname);
+              break;
+          default:
+            break;
+        }
         getNextDivName(message.user, message.nextToDivName);
       } else {
         console.log(JSON.stringify(message))
       }
   }
 
-  // Return the name of the next div
-  function getNextDivName(user, oldDivName) {
-      var nextDivName = null;
+  // create a user if possible
+  function create(user_id, user_nickname) {
+      if ( arrayUniqueNicknames.indexOf(nickname) > -1 ) {
+        arrayUniqueNicknames.push(user_nickname);
+        var path = {
+          'id' : user_id,
+          'nickname' : user_nickname,
+          'path' : { x: , y: , }
+        };
+        arrayPaths.push(path);
+        addNewUnselected(user_nickname);
 
-      for (i = 0; i < arraySelectedDivs.length; i++) {
-        if ( arraySelectedDivs[i].name == oldDivName) {
-          if ( i == arraySelectedDivs.length-1) {
-            nextDivName = arraySelectedDivs[0].name;
-          } else {
-            nextDivName = arraySelectedDivs[i+1].name;
-          }
-          break;
-        }
+        var index = arrayUniqueNicknames.indexOf(user_nickname);
+        pubnub.publish({
+              channel: user_id,
+              message: {"type": "create-response", "res": "s", "index": index}
+        });
+      } else {
+        pubnub.publish({
+              channel: user_id,
+              message: {"type": "create-response", "res": "f"}
+        });
       }
-
-      if (!nextDivName) {
-        if (arraySelectedDivs.length > 0) {
-          nextDivName = arraySelectedDivs[0].name;
-        } else {
-          nextDivName = "NoNaMe";
-        }
-      }
-      pubnub.publish({
-            channel: user,
-            message: {"nextDivName": nextDivName}
-      });
   }
