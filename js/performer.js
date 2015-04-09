@@ -53,7 +53,6 @@
           default:
             break;
         }
-        getNextDivName(message.user, message.nextToDivName);
       } else {
         console.log(JSON.stringify(message))
       }
@@ -61,17 +60,15 @@
 
   // create a user if possible
   function create(user_id, user_nickname) {
-      if ( arrayUniqueNicknames.indexOf(nickname) > -1 ) {
-        arrayUniqueNicknames.push(user_nickname);
+      if ( arrayUniqueNicknames.indexOf(user_nickname) == -1 ) {
+        var index = arrayUniqueNicknames.push(user_nickname) - 1;
         var path = {
           'id' : user_id,
           'nickname' : user_nickname,
-          'path' : { x: , y: , }
+          'path' : ""
         };
         arrayPaths.push(path);
-        addNewUnselected(user_nickname);
 
-        var index = arrayUniqueNicknames.indexOf(user_nickname);
         pubnub.publish({
               channel: user_id,
               message: {"type": "create-response", "res": "s", "index": index}
