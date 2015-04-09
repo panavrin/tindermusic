@@ -330,16 +330,42 @@ window.onbeforeunload = function(){
   return "";
 };
 
+var pattern = [];
+var patternSize = 5;
+
+function randomizeNote(){
+  canvas = $("#patternCanvas")[0];
+
+  for (var i=0; i< patternSize; i++){
+    var note = new Note(Math.min(canvas.width, canvas.height) / 12);
+    note.setPosition(canvas.width * Math.random(), canvas.height * Math.random())
+    pattern[i] = note;
+  }
+
+  for (var i=0; i< patternSize-1; i++){
+    pattern[i].distance = dist(pattern[i].x,pattern[i].y,pattern[i+1].x,pattern[i+1].y);
+  }
+}
+
+function update(){
+ // alert("update!")
+  $("#submit").css("visibility", "hidden");
+  $("#bottom_banner").css("visibility", "visible");
+  $("#top").css("visibility", "visible");
+}
+
 
 $(document).ready(function () {
 
 
-// resize images 
+  // resize images 
+  $("#submit").css("visibility", "visible");
 
   $(".tenpercent").each(function() {
-    var height =  window.innerHeight * 0.09; // Max width for the image
+    var height =  window.innerHeight * 0.08; // Max width for the image
     $(this).css("height", height);
   });
+
   // Parse messages received from PubNub platform
   
 /* $('#initial-message').bPopup({
@@ -350,18 +376,10 @@ $(document).ready(function () {
     escClose :false
   });
 */
-  var pattern = [];
-  var patternSize = 5;
 
   // this is moved here to support iOS : http://stackoverflow.com/questions/12517000/no-sound-on-ios-6-web-audio-api
   
 
-  $("#random").button().click(randomizeNote);
-
-  $("#update").button().click(function(){
-    alert("updated!");
-  });
-  
   $("#start").button().css({ margin:'5px'}).click(function(){
         
     $("#name_error_msg").text("");
@@ -414,19 +432,7 @@ $(document).ready(function () {
   var speed = 0.3; // 300 pixel per second (1000 ms); 
   var canvasHeight;
 
-  function randomizeNote(){
-    canvas = $("#patternCanvas")[0];
- 
-    for (var i=0; i< patternSize; i++){
-      var note = new Note(Math.min(canvas.width, canvasHeight) / 12);
-      note.setPosition(canvas.width * Math.random(), canvasHeight * Math.random())
-      pattern[i] = note;
-    }
-
-    for (var i=0; i< patternSize-1; i++){
-      pattern[i].distance = dist(pattern[i].x,pattern[i].y,pattern[i+1].x,pattern[i+1].y);
-    }
-  }
+  
   function init() {
     // Initialise our object
    // obj = {x:50, y:50, w:70, h:70};

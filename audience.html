@@ -23,16 +23,16 @@
 
 	<body><!-- onload="getNextDivName()">-->
 
-		<div class = "top_banner">
+		<div id = "top" class = "top_banner">
 			<div class="section group height_100">
 				<div class="col-left span_2_of_4 center border height_100">
 					<div class = "banner">
-						<span class = "banner_text"><h1 id="username">ID:snaglee</h1></span>
+						<span class = "banner_text"><h3 id="username">ID:snaglee</h3></span>
 					</div>
 				</div>
 				<div class="col-right span_2_of_4 center border height_100">
 					<div class = "banner">
-						<span class = "banner_text"><h1>update</h1></span>
+						<span class = "banner_text"><img src="./images/modify_w.png" class = "tenpercent" onclick="randomizeNote()"></span>
 					</div>
 				</div>
 			</div>
@@ -44,12 +44,12 @@
             <div class="section group height_100">
                 <div class="col-left span_2_of_4 center border height_100 ">
                     <div class = "banner">
-                        <span class = "banner_text responsive_font_size_4"><img src="./images/randomize.png" class = "tenpercent"></span>
+                        <span class = "banner_text responsive_font_size_4"><img src="./images/randomize.png" class = "tenpercent" onclick="randomizeNote()"></span>
                     </div>
                 </div>
                 <div class="col-right span_2_of_4 center border height_100 ">
                     <div class = "banner">
-                        <span class = "banner_text responsive_font_size_4"><img src="./images/play.png" class = "tenpercent"></span>
+                        <span class = "banner_text responsive_font_size_4"><img src="./images/play.png" class = "tenpercent" onclick="update()"></span>
                     </div>
                 </div>
             </div>
@@ -72,16 +72,16 @@
             </div>
         </div>-->
 
-		<div class = "bottom_banner">
+		<div id = "bottom_banner" class = "bottom_banner2">
 			<div class="section group height_100">
 				<div class="col-left span_2_of_4 center border height_100 ">
 					<div class = "banner">
-						<span class = "banner_text"><img  src="./images/heart.png" height="120px"></span>
+						<span class = "banner_text"><img  src="./images/heart.png" class = "tenpercent"></span>
 					</div>
 				</div>
 				<div class="col-right span_2_of_4 center border height_100 ">
 					<div class = "banner">
-						<span class = "banner_text"><img onclick="getNextDivName()" src="./images/close.png" height="120px"></span>
+						<span class = "banner_text"><img onclick="getNextDivName()" src="./images/close.png" class = "tenpercent"></span>
 					</div>
 				</div>
 			</div>
