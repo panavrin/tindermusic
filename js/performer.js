@@ -46,32 +46,32 @@
 
   });
 
+
+  function publishMessage(channel, options){
+    pubnub.publish({
+      channel: channel,
+      message: options
+    });
+
+    console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
+  }
+
   // send the performance status
   function performanceStatus( message ) {
-    var status = null;
-    if (performanceStarted) {
-      status = "started";
-    } else {
-      status = "stopped";
-    }
-
+    
     // if the method is called from presence callback
     if (typeof message.uuid !== 'undefined') {
-      pubnub.publish({
-            channel: message.uuid,
-            message: {"type": "performance",
-                      "status": status
-            }
-      });
+        publishMessage(message.uuid,{"type": "performance",
+                      "status": performanceStarted
+            } );
     // if the method is called from other place
     } else {
-      for (i = 0, i < arrayTinderMusics.length; i++) {
-        pubnub.publish({
-              channel: arrayTinderMusics[i].id,
-              message: {"type": "performance",
-                        "status": status
-              }
-        });
+      performanceStarted = !performanceStarted;
+      for (i = 0; i < arrayTinderMusics.length; i++) {
+        publishMessage(arrayTinderMusics[i].id,
+          {"type": "performance",
+                        "status": performanceStarted
+          });
       }
     }
 
@@ -125,21 +125,14 @@
       arrayTinderMusics.push(tm);
       // add to view
       setAsUnavailable(index);
-
-      pubnub.publish({
-            channel: user_id,
-            message: {"type": "create-response",
+      publishMessage(user_id, {"type": "create-response",
                       "res": "s",
                       "index": index
-            }
-      });
+            });
     // if the nickname already exists
     } else {
-      pubnub.publish({
-            channel: user_id,
-            message: {"type": "create-response",
-                      "res": "f"}
-      });
+      publishMessage(user_id, {"type": "create-response",
+                      "res": "f"});
     }
   }
 
@@ -180,26 +173,19 @@
       // TODO: show the number of followers
 
       // response
-      pubnub.publish({
-            channel: user.id,
-            message: {"type": "update-response",
+      publishMessage(user.id, {"type": "update-response",
                       "suggested_tm": {
                         "nickname" : suggested.nickname,
                         "index" : suggested.index,
-                        "tm" : suggested.tm
-                      }
-            }
-      });
-
+                        "tm" : suggested.tm}
+                      });
     } else {
       // there is no user to follow
       user.follow = "";
-      pubnub.publish({
-            channel: user.id,
-            message: {"type": "update-response",
+      publishMessage(user.id, {"type": "update-response",
                       "suggested_tm": ""
-            }
-      });
+            });
+      
     }
 
   }
@@ -229,26 +215,22 @@
       // TODO: update the number of followers on the screen
 
       // response
-      pubnub.publish({
-            channel: user.id,
-            message: {"type": "next-response",
+      publishMessage(user.id, {"type": "next-response",
                       "suggested_tm": {
                         "nickname" : suggested.nickname,
                         "index" : suggested.index,
                         "tm" : suggested.tm
                       }
-            }
-      });
-
+                    });
+      
     } else {
       // there is no user to follow
       user.follow = "";
-      pubnub.publish({
-            channel: user.id,
-            message: {"type": "next-response",
+      publishMessage(user.id, {"type": "next-response",
                       "suggested_tm": ""
-            }
-      });
+            });
+      
+      
     }
   }
 
@@ -300,19 +282,16 @@
     }
 
     // reponse with the latest tinder music
-    pubnub.publish({
-          channel: user.id,
-          message: {"type": "editing-response",
+    publishMessage(user.id, {"type": "editing-response",
                     "tm" : user.tm
-          }
-    });
+          });
+    
 
     // inform the followers
     for ( i = 0; i < user.followers.length; i++) {
-      pubnub.publish({
-            channel: arrayTinderMusics[ user.followers[i] ].id,
-            message: {"type": "user-editing"}
-      });
+      publishMessage(arrayTinderMusics[ user.followers[i] ].id, 
+        {"type": "user-editing"});
+    
     }
   }
 
@@ -326,10 +305,8 @@
     if ( user.status == 'available' ) {
       user.status = 'unavailable';
       for ( i = 0; i < user.followers.length; i++) {
-        pubnub.publish({
-              channel: arrayTinderMusics[ user.followers[i] ].id,
-              message: {"type": "user-unavailable"}
-        });
+        publishMessage(arrayTinderMusics[ user.followers[i] ].id, 
+        {"type": "user-unavailable"});
       }
     } else if ( user.status == 'unavailable') {
       // run something if the user is new?!

@@ -303,7 +303,7 @@ function parseMessage( message ) {
       }
     }
     else{
-      console.log("unhandled type:" + type);
+      console.log("unhandled type:" + message.type);
     }
   }
   else {
