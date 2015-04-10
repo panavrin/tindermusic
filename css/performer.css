@@ -2,7 +2,7 @@
   margin: 0 0;
   padding: 0 0;
 }*/
-#selecteds {
+#availables {
   background-color: black;
   color: grey;
   float: left;
@@ -10,21 +10,21 @@
   height: auto;
 }
 
-#unselecteds {
+#unavailables {
   background-color: blue;
   float:right;
   width: 34%;
   height: auto;
 }
 
-.unselected {
+.unavailable {
   background-color: yellow;
   width: 50%;
   padding: 10px;
   margin: 0 auto 10px;
 }
 
-.selected {
+.available {
   background-color: brown;
   width: 20%;
   float: left;

@@ -24,20 +24,38 @@ response if fail:
 }
 
 
-case 2 - update path complete ( from one audience member to performer)
+case 2 - update tinder complete ( from one audience member to performer)
 
 send:
 {
 	type : "update",
 	index : [index returned on create-response],
-	path : [string with the path?!]
+	tm : [string with the tindermusic?!]
 }
 
-response when received:
+response when updated if
+- we have some tinder music is available:
 {
 	type : "update-response",
-	suggested_path : {
-		nickname : [nickname from the owner of the path],
-		path: [string with the path?!]
+	suggested_tm : {
+		nickname : [nickname from the owner of the tinder music],
+		index : [index from the owner of the tinder music],
+		tm: [string with the tinder music?!]
 		}
+}
+
+response when updated if
+- we don't have some tinder music available:
+{
+	type : "update-response",
+	suggested_tm : ""
+}
+
+
+
+case a - user goes to edit mode and send message to the followers (from performer)
+
+send:
+{
+	type: "user-unavailable"
 }
