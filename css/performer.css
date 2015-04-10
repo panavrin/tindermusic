@@ -24,7 +24,22 @@
   margin: 0 auto 10px;
 }
 
+.unavailable-editing {
+  background-color: orange;
+  width: 50%;
+  padding: 10px;
+  margin: 0 auto 10px;
+}
+
 .available {
+  background-color: red;
+  width: 20%;
+  float: left;
+  padding: 10px;
+  margin: 10px;
+}
+
+.available-editing {
   background-color: brown;
   width: 20%;
   float: left;
