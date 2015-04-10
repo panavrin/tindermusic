@@ -34,13 +34,16 @@
 
   // subscribe to a channel
   pubnub.subscribe({
+
     channel: 'performer,audience',
     presence: performanceStatus,
     message: parseMessage,
     error: function (error) {
      // Handle error here
-     console.log(JSON.stringify(error));
-    }
+     console.log("error:" + JSON.stringify(error));
+    },
+    heartbeat: 15
+
   });
 
   // send the performance status
@@ -76,6 +79,7 @@
 
   // parse messages received from PubNub platform
   function parseMessage( message ) {
+    console.log("message - received:" + JSON.stringify(message));
     if (typeof message.type !== 'undefined') {
 
       switch(message.type) {
@@ -95,7 +99,7 @@
           break;
       }
     } else {
-      console.log(JSON.stringify(message))
+      console.log("unknown type of message received : " + JSON.stringify(message))
     }
   }
 

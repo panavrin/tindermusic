@@ -7,7 +7,10 @@ var soundEnabled = true;
 var context;
 var compressor;
 var reverb;
-
+var myIndex;
+var w;
+var h;
+var noteSize;
 function BufferLoader(context, urlList, callback) {
   this.context = context;
   this.urlList = urlList;
@@ -210,8 +213,7 @@ var minorScale = [0,2,3,5,7,8,10,12];
 var selectedScale = majorScale;
 var baseNote = 60;
 
-function Note(size){
-  this.size = size;
+function Note(){
   this.x = 0;
   this.y = 0;
   this.distance = 0;
@@ -220,7 +222,6 @@ function Note(size){
 Note.prototype.setPosition = function(x,y){
   this.x = x;
   this.y = y;
-    
 }
 
 function dist(x1,y1,x2,y2){
@@ -267,7 +268,7 @@ var my_id = PUBNUB.uuid();
 var pubnub = PUBNUB.init({
     publish_key: 'demo',
     subscribe_key: 'demo',
-    uuid: my_id
+    uuid: my_id, 
 });
 
 // Subscribe to a channel
@@ -277,7 +278,8 @@ pubnub.subscribe({
     error: function (error) {
      // Handle error here
      console.log(JSON.stringify(error));
-    }
+    }, 
+    heartbeat: 15
 });
 
 function parseMessage( message ) {
@@ -286,15 +288,22 @@ function parseMessage( message ) {
     setNextDivName(message.nextDivName);
   } 
   else if (typeof message.type !== 'undefined'){
-    if ( message.type == "create-respond"){
-      if (message.result == "s"){ 
+    if ( message.type == "create-response"){
+      if (message.res == "s"){ 
         state = "EDIT"; 
-        $('#initial-message').bPopup().close();  
+        $('#initial-message').bPopup().close(); 
+        var strScreenName = $("#screenname").val();
+        $('#screenname_display').text(strScreenName);
+        myIndex = message.index;
+        lastPingTime = Date.now();
       }
       else
       {
         $('#name_error_msg').text($('#screenname').val() + " is already taken.");
       }
+    }
+    else{
+      console.log("unhandled type:" + type);
     }
   }
   else {
@@ -306,10 +315,10 @@ function parseMessage( message ) {
 function getNextDivName() {
   var actualTindered =  document.getElementById('tindered');
   var actualDivName = actualTindered.textContent;
-  pubnub.publish({
+ /* pubnub.publish({
     channel: "performer",
     message: {"nextToDivName": actualDivName, "user": my_id}
-  });
+  });*/
 }
 
 function publishMessage(channel, options){
@@ -317,6 +326,8 @@ function publishMessage(channel, options){
     channel: channel,
     message: options
   });
+
+  console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
 }
 
 // Set the name of the next div
@@ -334,16 +345,15 @@ var pattern = [];
 var patternSize = 5;
 
 function randomizeNote(){
-  canvas = $("#patternCanvas")[0];
 
   for (var i=0; i< patternSize; i++){
-    var note = new Note(Math.min(canvas.width, canvas.height) / 12);
-    note.setPosition(canvas.width * Math.random(), canvas.height * Math.random())
+    var note = new Note();
+    note.setPosition(Math.random(), Math.random())
     pattern[i] = note;
   }
 
   for (var i=0; i< patternSize-1; i++){
-    pattern[i].distance = dist(pattern[i].x,pattern[i].y,pattern[i+1].x,pattern[i+1].y);
+    pattern[i].distance = dist(pattern[i].x * w,pattern[i].y* h,pattern[i+1].x* w,pattern[i+1].y* h);
   }
 }
 
@@ -395,11 +405,11 @@ $(document).ready(function () {
       return;
     }
 
-    //publishMessage("performer", {"type":"create", "my_id":my_id, "nickname": strScreenName});
+    publishMessage("performer", {"type":"create", "my_id":my_id, "nickname": strScreenName});
 
     $("#name_error_msg").text("Waiting for response...");
 
-    $('#initial-message').bPopup().close();
+    //$('#initial-message').bPopup().close();
 
     /*var delay = WX.StereoDelay({
     mix: 1.0,
@@ -430,7 +440,6 @@ $(document).ready(function () {
   var progress = 0;
   var lastPingTime = Date.now();
   var speed = 0.3; // 300 pixel per second (1000 ms); 
-  var canvasHeight;
 
   
   function init() {
@@ -440,8 +449,10 @@ $(document).ready(function () {
  
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight * 0.9;
-    canvasHeight = canvas.height;
-    
+    w = canvas.width;
+    h = canvas.height;
+    noteSize = Math.min(w,h)/12;
+
     randomizeNote();
 
     // Add eventlistener to canvas
@@ -457,12 +468,12 @@ $(document).ready(function () {
   function draw() {
     canvas = $("#patternCanvas")[0];
     var ctx = canvas.getContext('2d');
- 
+    
     // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, w, h);
     for (var i=0; i< selectedScale.length; i++){
       ctx.beginPath();
-      ctx.rect(0, i * canvas.height/selectedScale.length, canvas.width, canvas.height/selectedScale.length);
+      ctx.rect(0, i * h/selectedScale.length, w, h/selectedScale.length);
       if ( i % 2 == 0)
         ctx.fillStyle = 'white';
       else
@@ -475,23 +486,25 @@ $(document).ready(function () {
     
     for (var i=0; i< patternSize; i++){
     //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
-      drawCircle(ctx,pattern[i].x, pattern[i].y, pattern[i].size, '#CB59FF' );
+      drawCircle(ctx,pattern[i].x * w, pattern[i].y* h, noteSize, '#CB59FF' );
       if ( i < patternSize-1)
-        drawLine(ctx,pattern[i].x, pattern[i].y, pattern[i+1].x, pattern[i+1].y, '#7C339E');
-      drawCircle(ctx,pattern[i].x, pattern[i].y, pattern[i].size/3, '#7C339E' );
+        drawLine(ctx,pattern[i].x* w, pattern[i].y* h, pattern[i+1].x* w, pattern[i+1].y* h, '#7C339E');
+      drawCircle(ctx,pattern[i].x* w, pattern[i].y* h, noteSize/3, '#7C339E' );
     }
 
     if (playBarNote >= 0){
       var playBarCircleX = pattern[playBarNote].x * (1-progress) + pattern[playBarNote+1].x * (progress);
       var playBarCircleY = pattern[playBarNote].y * (1-progress) + pattern[playBarNote+1].y * (progress);
-      drawCircle(ctx,playBarCircleX, playBarCircleY, pattern[playBarNote].size/2 , '#CBFF59' );
+      drawCircle(ctx,playBarCircleX* w, playBarCircleY* h, noteSize/2 , '#CBFF59' );
    }
     // Draw our object in its new position
   }
 
   var animate = function() {
-    window.requestAnimFrame(animate);
 
+    window.requestAnimFrame(animate);
+    if (state == "NAME")
+      return;
     var currentTime = Date.now();
     var intervalInSec = interval/1000;
     var oscType = ["sine","sine","triangle","triangle","sawtooth","square","triangle","sawtooth","square" ];
@@ -509,9 +522,9 @@ $(document).ready(function () {
     //  synth.noteoff(60,0,context.currentTime + 1);
       if (soundEnabled){
 
-        var numOsc = Math.floor(pattern[playBarNote].x/canvas.width * maxNumOsc )  + 1;
-        var numDetune = Math.floor(pattern[playBarNote].x/canvas.width * detune );
-        var pitchIndex = Math.floor((1 - pattern[playBarNote].y/canvasHeight) * selectedScale.length);
+        var numOsc = Math.floor(pattern[playBarNote].x * maxNumOsc )  + 1;
+        var numDetune = Math.floor(pattern[playBarNote].x * detune );
+        var pitchIndex = Math.floor((1 - pattern[playBarNote].y) * selectedScale.length);
         var octave = Math.floor(pitchIndex / selectedScale.length);
         var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
            //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
@@ -532,9 +545,9 @@ $(document).ready(function () {
     if (progress >=0.97){
       playBarNote++;
       progress = 0;
-      var numOsc = Math.floor(pattern[playBarNote].x/canvas.width * maxNumOsc )  + 1;
-        var numDetune = Math.floor(pattern[playBarNote].x/canvas.width * detune );
-        var pitchIndex = Math.floor((1 - pattern[playBarNote].y/canvasHeight) * selectedScale.length);
+      var numOsc = Math.floor(pattern[playBarNote].x * maxNumOsc )  + 1;
+        var numDetune = Math.floor(pattern[playBarNote].x * detune );
+        var pitchIndex = Math.floor((1 - pattern[playBarNote].y) * selectedScale.length);
         var octave = Math.floor(pitchIndex / selectedScale.length);
           
       lastPingTime = currentTime;
@@ -586,16 +599,17 @@ $(document).ready(function () {
     //var touch = event
     if ( selectedNote <0 )
       return;
+    
     // Is touch close enough to our object?
   
     // Assign new coordinates to our object
-    pattern[selectedNote].setPosition(e.pageX -  pattern[selectedNote].size/2
-        ,e.pageY -  pattern[selectedNote].size/2);
-    pattern[selectedNote].distance = dist(pattern[selectedNote].x, pattern[selectedNote].y,
-      pattern[(1+selectedNote)%patternSize].x, pattern[(1+selectedNote)%patternSize].y);
+    pattern[selectedNote].setPosition((e.pageX -  noteSize/2)/w
+        ,(e.pageY -  noteSize/2)/h);
+    pattern[selectedNote].distance = dist(pattern[selectedNote].x * w, pattern[selectedNote].y * h,
+      pattern[(1+selectedNote)%patternSize].x * w, pattern[(1+selectedNote)%patternSize].y * h);
     if ( selectedNote > 0)
-      pattern[selectedNote-1].distance = dist(pattern[selectedNote].x, pattern[selectedNote].y,
-      pattern[selectedNote-1].x, pattern[selectedNote-1].y);
+      pattern[selectedNote-1].distance = dist(pattern[selectedNote].x* w, pattern[selectedNote].y* h,
+      pattern[selectedNote-1].x* w, pattern[selectedNote-1].y* h);
 
     // Redraw the canvas
     draw();
@@ -610,13 +624,17 @@ $(document).ready(function () {
     // Is touch close enough to our object?
   
     // Assign new coordinates to our object
-    pattern[selectedNote].setPosition(e.pageX -  pattern[selectedNote].size/2
-        ,e.pageY -  pattern[selectedNote].size/2);
-    pattern[selectedNote].distance = dist(pattern[selectedNote].x, pattern[selectedNote].y,
-      pattern[(1+selectedNote)%patternSize].x, pattern[(1+selectedNote)%patternSize].y);
+    
+    // Is touch close enough to our object?
+  
+    // Assign new coordinates to our object
+    pattern[selectedNote].setPosition((e.pageX -  noteSize/2)/w
+        ,(e.pageY -  noteSize/2)/h);
+    pattern[selectedNote].distance = dist(pattern[selectedNote].x * w, pattern[selectedNote].y * h,
+      pattern[(1+selectedNote)%patternSize].x * w, pattern[(1+selectedNote)%patternSize].y * h);
     if ( selectedNote > 0)
-      pattern[selectedNote-1].distance = dist(pattern[selectedNote].x, pattern[selectedNote].y,
-      pattern[selectedNote-1].x, pattern[selectedNote-1].y);
+      pattern[selectedNote-1].distance = dist(pattern[selectedNote].x* w, pattern[selectedNote].y* h,
+      pattern[selectedNote-1].x* w, pattern[selectedNote-1].y* h);
 
     // Redraw the canvas
     draw();
@@ -633,14 +651,14 @@ $(document).ready(function () {
     var tempNoteID = -1;
 
     for (var i=0; i< patternSize; i++){
-      var distance = dist(e.pageX, e.pageY, pattern[i].x, pattern[i].y);
+      var distance = dist(e.pageX, e.pageY, pattern[i].x * w, pattern[i].y * h);
       if ( minDistance >= distance){
         minDistance = distance;
         tempNoteID = i;
       }
     }
 
-    if(tempNoteID > -1 && minDistance < pattern[tempNoteID].size) {
+    if(tempNoteID > -1 && minDistance < noteSize) {
       selectedNote = tempNoteID;
     }
   });
@@ -652,14 +670,14 @@ $(document).ready(function () {
     var e = event.originalEvent.changedTouches[0];
 
     for (var i=0; i< patternSize; i++){
-      var distance = dist(e.pageX, e.pageY, pattern[i].x, pattern[i].y);
+      var distance = dist(e.pageX, e.pageY, pattern[i].x * w, pattern[i].y * h);
       if ( minDistance >= distance){
         minDistance = distance;
         tempNoteID = i;
       }
     }
     
-    if(tempNoteID > -1 && minDistance < pattern[tempNoteID].size) {
+    if(tempNoteID > -1 && minDistance < noteSize) {
       selectedNote = tempNoteID;
     }
 
