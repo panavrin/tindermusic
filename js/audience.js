@@ -272,7 +272,7 @@ var pubnub = PUBNUB.init({
 
 // Subscribe to a channel
 pubnub.subscribe({
-    channel: my_id,
+    channel: my_id + ",audience",
     message: parseMessage,
     error: function (error) {
      // Handle error here
