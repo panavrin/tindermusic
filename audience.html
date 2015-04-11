@@ -22,12 +22,11 @@
 	</head>
 
 	<body><!-- onload="getNextDivName()">-->
-
 		<div id = "top" class = "top_banner">
 			<div class="section group height_100">
 				<div class="col-left span_2_of_4 center border height_100">
 					<div class = "banner">
-						<span class = "banner_text responsive_font_size_4">ID:<span id="screenname_display">snaglee</span></span>
+						<span class = "banner_text responsive_font_size_4"><span id="screenname_display">snaglee</span></span>
 					</div>
 				</div>
 				<div class="col-right span_2_of_4 center border height_100">
@@ -81,7 +80,7 @@
 				</div>
 				<div class="col-right span_2_of_4 center border height_100 ">
 					<div class = "banner">
-						<span class = "banner_text"><img onclick="getNextDivName()" src="./images/close.png" class = "tenpercent"></span>
+						<span class = "banner_text"><img onclick="getNextPattern()" src="./images/close.png" class = "tenpercent"></span>
 					</div>
 				</div>
 			</div>
@@ -97,6 +96,13 @@
                     <br/><br/>
                     <button id = "start" class ="responsive_font_size_5">Start</button> 
                 </div>
+            </div>
+        </div>
+
+        <div id="waiting-message" class="dialog-message" >
+            <div>   
+                <h1>Crowd in C[loud]</h1>
+                <div class="responsive_font_size_4">Waiting for the next pattern.....</div>
             </div>
         </div>
 

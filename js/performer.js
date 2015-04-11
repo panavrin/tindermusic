@@ -6,7 +6,7 @@
   var arrayTinderMusics = new Array();
   var arrayAvailables = new Array();
   var arrayUnavailables = new Array();
-
+  var arrayWaitingPeople = new Array();;
   var divUnavailables = null;
   var divAvailables = null;
 
@@ -27,8 +27,8 @@
 
   // initialize with Publish & Subscribe Keys
   var pubnub = PUBNUB.init({
-    publish_key: 'demo',
-    subscribe_key: 'demo',
+    publish_key: 'pub-c-b1da18b4-71e2-4982-9ba6-e81abf986cc5',
+    subscribe_key: 'sub-c-48b60458-b879-11e4-8e2f-02ee2ddab7fe',
     uuid: my_id
   });
 
@@ -151,43 +151,29 @@
     } else {
       document.getElementById(user.index).className = 'available';
     }
-
-    suggested_index = get_next_user_to_follow(user_index);
-
-    if ( typeof(user.follow) == 'number' ) {
-      var ex_followed = user.follow;
-      // unfollow the older
-      var follower_id = arrayTinderMusics[ex_followed].followers.indexOf[user.index];
-      if (follower_id != -1) {
-        arrayTinderMusics[ex_followed].followers.splice(follower_id,1);
+    
+    
+    if ( typeof(user.follow) == 'number' ) { // I was in a pattern
+      var followed = user.follow;
+      
+      if (arrayAvailables.indexOf(followed) == -1) {
+          next(user.index)
+      }
+      else {
+        var suggested = arrayTinderMusics[followed];
+        publishMessage(user.id, 
+          {"type": "next-response",
+            "suggested_tm": {
+                        "nickname" : suggested.nickname,
+                        "tm" : suggested.tm
+                      }
+                    });      
       }
       // TODO: update the number of followers on the screen
     }
-
-    if ( suggested_index != -1 ) {
-      var suggested = arrayTinderMusics[suggested_index];
-
-      // follow
-      user.follow = suggested_index;
-      suggested.followers.push(user.index);
-      // TODO: show the number of followers
-
-      // response
-      publishMessage(user.id, {"type": "update-response",
-                      "suggested_tm": {
-                        "nickname" : suggested.nickname,
-                        "index" : suggested.index,
-                        "tm" : suggested.tm}
-                      });
-    } else {
-      // there is no user to follow
-      user.follow = "";
-      publishMessage(user.id, {"type": "update-response",
-                      "suggested_tm": ""
-            });
-      
+    else{
+      next(user.index);
     }
-
   }
 
   // update the next user to follow
@@ -218,18 +204,20 @@
       publishMessage(user.id, {"type": "next-response",
                       "suggested_tm": {
                         "nickname" : suggested.nickname,
-                        "index" : suggested.index,
                         "tm" : suggested.tm
                       }
                     });
       
     } else {
       // there is no user to follow
-      user.follow = "";
+   /*   user.follow = "";
       publishMessage(user.id, {"type": "next-response",
                       "suggested_tm": ""
             });
-      
+     */       
+      // keep track of waiting people 
+      arrayWaitingPeople.push(user.index);
+
       
     }
   }
@@ -249,13 +237,9 @@
         var ex_followed = user.follow;
         // search the next one
         if ( arrayTinderMusics[ex_followed].status == 'available') {
-          var possibleAvailable = arrayAvailables.indexOf(ex_followed) + 1;
-
-          for ( i = possibleAvailable; i < arrayAvailables.length; i++ ) {
-            if ( arrayTinderMusics[ arrayAvailables[i] ].mode != 'editing' ) {
-              suggested_index = arrayTinderMusics[ arrayAvailables[i] ].index;
-              break; // found!
-            } // else try next one
+          var possible = arrayAvailables.indexOf(ex_followed) + 1;
+          if (possible < arrayAvailables.length) {
+            suggested_index = arrayTinderMusics[ arrayAvailables[possible] ].index;
           }
         } // else there is no one available, follow the first
       } // else the user is not following anybody, follow the first
@@ -363,4 +347,11 @@
 
     arrayAvailables.push(index);
     divAvailables.appendChild(newDiv);
+
+    if ( arrayWaitingPeople.length > 0){
+      for(var i=0; i< arrayWaitingPeople.length; i++){
+        next(arrayWaitingPeople[i]); 
+      }
+      arrayWaitingPeople = new Array();
+    }
   }

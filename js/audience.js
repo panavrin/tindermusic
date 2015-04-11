@@ -2,7 +2,22 @@
 
 // PubNub code
 // Get an unique pubnub id
-var state = "NAME"; // it is either NAME, EDIT, PLAY
+var state = "NAME"; // it is either NAME, EDIT, WAIT, CHECK, DATE
+
+/*
+
+State Diagram 
+
+NAME -> EDIT : create-response msg received
+EDIT -> WAIT : update msg sent 
+WAIT -> CHECK : next-response msg received in "WAIT" state
+CHECK -> DATE : user press HEART button
+DATE -> CHECK : user press exit button
+CHECK -> EDIT : user press "update" button
+
+*/
+
+
 var soundEnabled = true;
 var context;
 var compressor;
@@ -266,8 +281,8 @@ var my_id = PUBNUB.uuid();
 
 // Initialize with Publish & Subscribe Keys
 var pubnub = PUBNUB.init({
-    publish_key: 'demo',
-    subscribe_key: 'demo',
+    publish_key: 'pub-c-b1da18b4-71e2-4982-9ba6-e81abf986cc5',
+    subscribe_key: 'sub-c-48b60458-b879-11e4-8e2f-02ee2ddab7fe',
     uuid: my_id, 
 });
 
@@ -302,6 +317,25 @@ function parseMessage( message ) {
         $('#name_error_msg').text($('#screenname').val() + " is already taken.");
       }
     }
+    else if ( message.type == "next-response")
+    {
+      
+      patternElse = message.suggested_tm.tm;
+      currentNickname = message.suggested_tm.nickname;
+      $('#screenname_display').text(currentNickname);
+
+      for (var i=0; i< patternElse.length-1; i++){
+        patternElse[i].distance = dist(patternElse[i].x * w,patternElse[i].y* h,patternElse[i+1].x* w,patternElse[i+1].y* h);
+      }
+
+      if ( state == "WAIT"){
+        $("#bottom_banner").css("visibility", "visible");
+        $("#top").css("visibility", "visible");  
+        lastPingTimeElse = Date.now();
+        state = "CHECK";
+        $("#waiting-message").css("visibility", "hidden");
+      }
+    }
     else{
       console.log("unhandled type:" + message.type);
     }
@@ -309,6 +343,26 @@ function parseMessage( message ) {
   else {
     console.log(JSON.stringify(message));
   }
+}
+
+function publishMessage(channel, options){
+  pubnub.publish({
+    channel: channel,
+    message: options
+  });
+
+  console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
+}
+
+
+function getNextPattern(){
+  state = "WAIT";
+  publishMessage("performer", {type:"next", index: myIndex});
+
+  $("#bottom_banner").css("visibility", "hidden");
+  $("#top").css("visibility", "hidden");  
+  $("#waiting-message").css("visibility", "visible");
+
 }
 
 // Request the next div
@@ -321,14 +375,6 @@ function getNextDivName() {
   });*/
 }
 
-function publishMessage(channel, options){
-  pubnub.publish({
-    channel: channel,
-    message: options
-  });
-
-  console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
-}
 
 // Set the name of the next div
 function setNextDivName(divName) {
@@ -342,7 +388,9 @@ window.onbeforeunload = function(){
 };
 
 var pattern = [];
+var patternElse = [];
 var patternSize = 5;
+var currentNickname = ""
 
 function randomizeNote(){
 
@@ -359,15 +407,16 @@ function randomizeNote(){
 
 function update(){
  // alert("update!")
+  state = "WAIT";
+  publishMessage("performer", {type :"update", index: myIndex, tm : pattern});
+  $("#waiting-message").css("visibility", "visible");
   $("#submit").css("visibility", "hidden");
-  $("#bottom_banner").css("visibility", "visible");
-  $("#top").css("visibility", "visible");
 }
 
 
 $(document).ready(function () {
 
-
+  $("#waiting-message").css("visibility", "hidden");
   // resize images 
   $("#submit").css("visibility", "visible");
 
@@ -435,11 +484,16 @@ $(document).ready(function () {
   });
   
   var playBarNote = -1;
+  var playBarNoteElse = -1;
   var intervalBetweenPattern = 1000;
   var interval = intervalBetweenPattern;
+  var intervalElse = intervalBetweenPattern;
   var progress = 0;
+  var progressElse = 0;
   var lastPingTime = Date.now();
+  var lastPingTimeElse = Date.now();
   var speed = 0.3; // 300 pixel per second (1000 ms); 
+  var speedElse = 0.3; // 300 pixel per second (1000 ms); 
 
   
   function init() {
@@ -471,31 +525,55 @@ $(document).ready(function () {
     
     // Clear the canvas
     ctx.clearRect(0, 0, w, h);
-    for (var i=0; i< selectedScale.length; i++){
-      ctx.beginPath();
-      ctx.rect(0, i * h/selectedScale.length, w, h/selectedScale.length);
-      if ( i % 2 == 0)
-        ctx.fillStyle = 'white';
-      else
-        ctx.fillStyle = '#eeddfe';
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = '#661A4C';
-      ctx.stroke();
-    }
-    
-    for (var i=0; i< patternSize; i++){
-    //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
-      drawCircle(ctx,pattern[i].x * w, pattern[i].y* h, noteSize, '#CB59FF' );
-      if ( i < patternSize-1)
-        drawLine(ctx,pattern[i].x* w, pattern[i].y* h, pattern[i+1].x* w, pattern[i+1].y* h, '#7C339E');
-      drawCircle(ctx,pattern[i].x* w, pattern[i].y* h, noteSize/3, '#7C339E' );
+
+    if ( state == "EDIT" || state == "DATE" || state == "CHECK"){
+       for (var i=0; i< selectedScale.length; i++){
+        ctx.beginPath();
+        ctx.rect(0, i * h/selectedScale.length, w, h/selectedScale.length);
+        if ( i % 2 == 0)
+          ctx.fillStyle = '#f8f8f5';
+        else
+          ctx.fillStyle = '#e9e3e0';
+        ctx.fill();
+     /*   ctx.lineWidth = 3;
+        ctx.strokeStyle = '#661A4C';
+        ctx.stroke();
+      */}
+      
     }
 
-    if (playBarNote >= 0){
-      var playBarCircleX = pattern[playBarNote].x * (1-progress) + pattern[playBarNote+1].x * (progress);
-      var playBarCircleY = pattern[playBarNote].y * (1-progress) + pattern[playBarNote+1].y * (progress);
-      drawCircle(ctx,playBarCircleX* w, playBarCircleY* h, noteSize/2 , '#CBFF59' );
+    if ( state == "EDIT" || state == "DATE"){
+
+     
+      for (var i=0; i< patternSize; i++){
+      //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
+        drawCircle(ctx,pattern[i].x * w, pattern[i].y* h, noteSize, '#83eb9f' );
+        if ( i < patternSize-1)
+          drawLine(ctx,pattern[i].x* w, pattern[i].y* h, pattern[i+1].x* w, pattern[i+1].y* h, '#57bd72');
+        drawCircle(ctx,pattern[i].x* w, pattern[i].y* h, noteSize/3, '#57bd72' );
+      }
+
+      if (playBarNote >= 0){
+        var playBarCircleX = pattern[playBarNote].x * (1-progress) + pattern[playBarNote+1].x * (progress);
+        var playBarCircleY = pattern[playBarNote].y * (1-progress) + pattern[playBarNote+1].y * (progress);
+        drawCircle(ctx,playBarCircleX* w, playBarCircleY* h, noteSize/2 , '#fdff85' );
+     }
+   }
+   
+   if ( state == "CHECK" || state == "DATE"){
+
+      for (var i=0; i< patternElse.length; i++){
+      //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
+        drawCircle(ctx,patternElse[i].x * w, patternElse[i].y* h, noteSize, '#ff969d' );
+        if ( i < patternElse.length-1)
+          drawLine(ctx,patternElse[i].x* w, patternElse[i].y* h, patternElse[i+1].x* w, patternElse[i+1].y* h, '#d16970');
+        drawCircle(ctx,patternElse[i].x* w, patternElse[i].y* h, noteSize/3, '#d16970' );
+      }
+      if (playBarNoteElse >= 0){
+        var playBarCircleX = patternElse[playBarNoteElse].x * (1-progressElse) + patternElse[playBarNoteElse+1].x * (progressElse);
+        var playBarCircleY = patternElse[playBarNoteElse].y * (1-progressElse) + patternElse[playBarNoteElse+1].y * (progressElse);
+        drawCircle(ctx,playBarCircleX* w, playBarCircleY* h, noteSize/2 , '#fdff85' );
+     }
    }
     // Draw our object in its new position
   }
@@ -503,7 +581,7 @@ $(document).ready(function () {
   var animate = function() {
 
     window.requestAnimFrame(animate);
-    if (state == "NAME")
+    if (state == "NAME" || state == "WAIT")
       return;
     var currentTime = Date.now();
     var intervalInSec = interval/1000;
@@ -511,81 +589,148 @@ $(document).ready(function () {
     //var oscType = ["triangle"];
     var detune = 20;
     var maxNumOsc = oscType.length;
-    if (playBarNote < 0 && lastPingTime  + interval > currentTime)
-      return;
-    else if (playBarNote < 0 && lastPingTime + interval <= currentTime){
-      playBarNote++;
-      lastPingTime = currentTime;
-      interval = pattern[playBarNote].distance / speed;
-      intervalInSec = interval/1000;
-    //  synth.noteon(60, 127, context.currentTime);
-    //  synth.noteoff(60,0,context.currentTime + 1);
-      if (soundEnabled){
 
+    if (state == "EDIT" || state == "DATE"){
+      progress = (currentTime - lastPingTime ) / interval;
+      if (playBarNote < 0 && lastPingTime + interval < currentTime){
+        playBarNote++;
+        lastPingTime = currentTime;
+        interval = pattern[playBarNote].distance / speed;
+        intervalInSec = interval/1000;
+        progress = 0;
+
+      //  synth.noteon(60, 127, context.currentTime);
+      //  synth.noteoff(60,0,context.currentTime + 1);
+        if (soundEnabled){
+
+          var numOsc = Math.floor(pattern[playBarNote].x * maxNumOsc )  + 1;
+          var numDetune = Math.floor(pattern[playBarNote].x * detune );
+          var pitchIndex = Math.floor((1 - pattern[playBarNote].y) * selectedScale.length);
+          var octave = Math.floor(pitchIndex / selectedScale.length);
+          var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
+             //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
+          voice.stop(context.currentTime + intervalInSec * 0.7);
+          voice.connect(reverb);
+          //function(delay, A,D, peakLevel, sustainlevel)
+          //function(time, A,D,S,R, peakLevel, sustainlevel){
+          voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
+
+          //voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
+          // ADSR.prototype.noteOff= function(delay, R, sustainlevel){
+          // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);    
+          
+      //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
+        }
+      }
+      else if (playBarNote >= 0 && lastPingTime + interval < currentTime){
+        playBarNote++;
+        progress = 0;
         var numOsc = Math.floor(pattern[playBarNote].x * maxNumOsc )  + 1;
         var numDetune = Math.floor(pattern[playBarNote].x * detune );
         var pitchIndex = Math.floor((1 - pattern[playBarNote].y) * selectedScale.length);
         var octave = Math.floor(pitchIndex / selectedScale.length);
-        var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
-           //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
-        voice.stop(context.currentTime + intervalInSec * 0.7);
-        voice.connect(reverb);
-        //function(delay, A,D, peakLevel, sustainlevel)
-        //function(time, A,D,S,R, peakLevel, sustainlevel){
-        voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
-
-        //voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
-        // ADSR.prototype.noteOff= function(delay, R, sustainlevel){
-        // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);    
+            
+        lastPingTime = currentTime;
+        //      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
+    //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
         
-    //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
+        if (playBarNote == patternSize-1)
+        {
+          interval = intervalBetweenPattern;
+          playBarNote = -1;
+      //    console.log("end! (" + playBarNote + "," + interval);
+        }else{
+          interval = pattern[playBarNote].distance / speed;
+    //      console.log("next! (" + pattern[playBarNote].distance + "," + interval);
+        }
+        intervalInSec = interval/1000;
+        if ( soundEnabled){
+          var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
+          voice.stop( context.currentTime + intervalInSec * 0.7);
+          voice.connect(reverb);
+          voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain ); 
+        }
       }
-    }
-    progress = (currentTime - lastPingTime ) / interval;
-    if (progress >=0.97){
-      playBarNote++;
-      progress = 0;
-      var numOsc = Math.floor(pattern[playBarNote].x * maxNumOsc )  + 1;
-        var numDetune = Math.floor(pattern[playBarNote].x * detune );
-        var pitchIndex = Math.floor((1 - pattern[playBarNote].y) * selectedScale.length);
-        var octave = Math.floor(pitchIndex / selectedScale.length);
+    } // end of if (state == "EDIT" || state == "DATE"){
+
+
+    if (state == "CHECK" || state == "DATE"){
+      progressElse = (currentTime - lastPingTimeElse ) / intervalElse;
+      if (playBarNoteElse < 0 && lastPingTimeElse + intervalElse < currentTime){
+        playBarNoteElse++;
+        progressElse=0;
+        lastPingTimeElse = currentTime;
+        intervalElse = patternElse[playBarNoteElse].distance / speedElse;
+        intervalInSec = interval/1000;
+      //  synth.noteon(60, 127, context.currentTime);
+      //  synth.noteoff(60,0,context.currentTime + 1);
+        if (soundEnabled){
+
+          var numOsc = Math.floor(patternElse[playBarNoteElse].x * maxNumOsc )  + 1;
+          var numDetune = Math.floor(patternElse[playBarNoteElse].x * detune );
+          var pitchIndex = Math.floor((1 - patternElse[playBarNoteElse].y) * selectedScale.length);
+          var octave = Math.floor(pitchIndex / selectedScale.length);
+          var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
+             //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
+          voice.stop(context.currentTime + intervalInSec * 0.7);
+          voice.connect(reverb);
+          //function(delay, A,D, peakLevel, sustainlevel)
+          //function(time, A,D,S,R, peakLevel, sustainlevel){
+          voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
+
+          //voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
+          // ADSR.prototype.noteOff= function(delay, R, sustainlevel){
+          // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);    
           
-      lastPingTime = currentTime;
-      //      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
-  //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
+      //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
+        }
+      }
+      else if (playBarNoteElse >= 0 && lastPingTimeElse + intervalElse < currentTime){
+        playBarNoteElse++;
+        progressElse = 0;
+        var numOsc = Math.floor(patternElse[playBarNoteElse].x * maxNumOsc )  + 1;
+        var numDetune = Math.floor(patternElse[playBarNoteElse].x * detune );
+        var pitchIndex = Math.floor((1 - patternElse[playBarNoteElse].y) * selectedScale.length);
+        var octave = Math.floor(pitchIndex / selectedScale.length);
+            
+        lastPingTimeElse = currentTime;
+        //      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
+    //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
+        
+        if (playBarNoteElse == patternElse.length-1)
+        {
+          intervalElse = intervalBetweenPattern;
+          playBarNoteElse = -1;
+      //    console.log("end! (" + playBarNote + "," + interval);
+        }else{
+          intervalElse = patternElse[playBarNoteElse].distance / speedElse;
+    //      console.log("next! (" + pattern[playBarNote].distance + "," + interval);
+        }
+        intervalInSec = interval/1000;
+        if ( soundEnabled){
+          //synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
+          //synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
+          var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
+                    //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
+          //console.log("currentTime:" + context.currentTime);
+          //voice.stopAt = context.currentTime + intervalInSec * 0.4;
+          
+          voice.stop( context.currentTime + intervalInSec * 0.7);
+          
+          voice.connect(reverb);
+          voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
+          //function(delay, A,D, peakLevel, sustainlevel)
+         // voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
+          // ADSR.prototype.noteOff= function(delay, R, sustainlevel){
+         // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);    
+          
+        }
+      }
+    } // end of if (state == "EDIT" || state == "DATE"){
+
+   // if (state == "CHECK" || state == "DATE"){
       
-      if (playBarNote == patternSize-1)
-      {
-        interval = intervalBetweenPattern;
-        playBarNote = -1;
-    //    console.log("end! (" + playBarNote + "," + interval);
-      }else{
-        interval = pattern[playBarNote].distance / speed;
-  //      console.log("next! (" + pattern[playBarNote].distance + "," + interval);
-      }
-      intervalInSec = interval/1000;
-      if ( soundEnabled){
-        //synth.onData('noteon', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime});
-        //synth.onData('noteoff', {"pitch":60+ pentatonicScale[playBarNote], "time":context.currentTime+1});
-        var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
-                  //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
-        //console.log("currentTime:" + context.currentTime);
-        //voice.stopAt = context.currentTime + intervalInSec * 0.4;
-        
-        voice.stop( context.currentTime + intervalInSec * 0.7);
-        
-        voice.connect(reverb);
-        voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
-        //function(delay, A,D, peakLevel, sustainlevel)
-       // voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
-        // ADSR.prototype.noteOff= function(delay, R, sustainlevel){
-       // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);    
-        
-      }
-    }
-
-    
-
+    //}
     draw(); 
 
 //    requestAnimationFrame(animate, renderer.domElement);
