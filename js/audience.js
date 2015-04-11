@@ -2,7 +2,7 @@
 
 // PubNub code
 // Get an unique pubnub id
-var state = "NAME"; // it is either NAME, EDIT, WAIT, CHECK, DATE
+var state = "NAME"; // it is either NAME, EDIT, WAIT, CHECK, MINGLE
 
 /*
 
@@ -26,6 +26,14 @@ var myIndex;
 var w;
 var h;
 var noteSize;
+
+var pattern = [];
+var originalPattern = [];
+var patternElse = [];
+var patternSize = 5;
+var currentNickname = ""
+
+
 function BufferLoader(context, urlList, callback) {
   this.context = context;
   this.urlList = urlList;
@@ -311,6 +319,8 @@ function parseMessage( message ) {
         $('#screenname_display').text(strScreenName);
         myIndex = message.index;
         lastPingTime = Date.now();
+        $("#submit_pane").css("visibility", "visible");
+
       }
       else
       {
@@ -330,7 +340,7 @@ function parseMessage( message ) {
 
       if ( state == "WAIT"){
         $("#bottom_banner").css("visibility", "visible");
-        $("#top").css("visibility", "visible");  
+        $("#top_banner").css("visibility", "visible");  
         lastPingTimeElse = Date.now();
         state = "CHECK";
         $("#waiting-message").css("visibility", "hidden");
@@ -360,7 +370,7 @@ function getNextPattern(){
   publishMessage("performer", {type:"next", index: myIndex});
 
   $("#bottom_banner").css("visibility", "hidden");
-  $("#top").css("visibility", "hidden");  
+  $("#top_banner").css("visibility", "hidden");  
   $("#waiting-message").css("visibility", "visible");
 
 }
@@ -387,10 +397,6 @@ window.onbeforeunload = function(){
   return "";
 };
 
-var pattern = [];
-var patternElse = [];
-var patternSize = 5;
-var currentNickname = ""
 
 function randomizeNote(){
 
@@ -410,15 +416,45 @@ function update(){
   state = "WAIT";
   publishMessage("performer", {type :"update", index: myIndex, tm : pattern});
   $("#waiting-message").css("visibility", "visible");
-  $("#submit").css("visibility", "hidden");
+  $("#submit_pane").css("visibility", "hidden");
 }
 
+function modifyPattern(){
+  state = "EDIT";
+  $("#submit_pane").css("visibility", "visible"); 
+  $("#bottom_banner").css("visibility", "hidden");
+  $("#top_banner").css("visibility", "hidden");  
+}
+
+function mingle(){
+  state = "MINGLE";
+  $("#mingle_pane").css("visibility", "visible"); 
+  $("#bottom_banner").css("visibility", "hidden");
+  $("#top_banner").css("visibility", "hidden");  
+  for (var i=0; i < pattern.length; i++){
+    var note = new Note();
+    note.setPosition(pattern[i].x, pattern[i].y);
+    note.distance = pattern[i].distance;
+    originalPattern[i] = note;
+  }
+
+}
+
+function exit(){
+  state = "WAIT";
+  publishMessage("performer", {type :"whereami", index: myIndex});
+  $("#waiting-message").css("visibility", "visible");
+  $("#mingle_pane").css("visibility", "hidden"); 
+  for (var i=0; i < pattern.length; i++){
+    pattern[i].setPosition(originalPattern[i].x, originalPattern[i].y);
+    pattern[i].distance = originalPattern[i].distance;
+  }
+}
 
 $(document).ready(function () {
 
   $("#waiting-message").css("visibility", "hidden");
   // resize images 
-  $("#submit").css("visibility", "visible");
 
   $(".tenpercent").each(function() {
     var height =  window.innerHeight * 0.08; // Max width for the image
@@ -526,7 +562,7 @@ $(document).ready(function () {
     // Clear the canvas
     ctx.clearRect(0, 0, w, h);
 
-    if ( state == "EDIT" || state == "DATE" || state == "CHECK"){
+    if ( state == "EDIT" || state == "MINGLE" || state == "CHECK"){
        for (var i=0; i< selectedScale.length; i++){
         ctx.beginPath();
         ctx.rect(0, i * h/selectedScale.length, w, h/selectedScale.length);
@@ -542,7 +578,7 @@ $(document).ready(function () {
       
     }
 
-    if ( state == "EDIT" || state == "DATE"){
+    if ( state == "EDIT" || state == "MINGLE"){
 
      
       for (var i=0; i< patternSize; i++){
@@ -560,7 +596,7 @@ $(document).ready(function () {
      }
    }
    
-   if ( state == "CHECK" || state == "DATE"){
+   if ( state == "CHECK" || state == "MINGLE"){
 
       for (var i=0; i< patternElse.length; i++){
       //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
@@ -590,7 +626,7 @@ $(document).ready(function () {
     var detune = 20;
     var maxNumOsc = oscType.length;
 
-    if (state == "EDIT" || state == "DATE"){
+    if (state == "EDIT" || state == "MINGLE"){
       progress = (currentTime - lastPingTime ) / interval;
       if (playBarNote < 0 && lastPingTime + interval < currentTime){
         playBarNote++;
@@ -654,7 +690,7 @@ $(document).ready(function () {
     } // end of if (state == "EDIT" || state == "DATE"){
 
 
-    if (state == "CHECK" || state == "DATE"){
+    if (state == "CHECK" || state == "MINGLE"){
       progressElse = (currentTime - lastPingTimeElse ) / intervalElse;
       if (playBarNoteElse < 0 && lastPingTimeElse + intervalElse < currentTime){
         playBarNoteElse++;

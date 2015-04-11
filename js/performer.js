@@ -95,6 +95,9 @@
         case 'editing':
           editing(message.index);
           break;
+        case 'whereami':
+          inform(message.index);
+          break;
         default:
           break;
       }
@@ -137,6 +140,31 @@
   }
 
   // update the tinder music and get the next user to follow (get the next?! always?!)
+  function inform(user_index){
+    var user = arrayTinderMusics[user_index];
+    if ( typeof(user.follow) == 'number' ) { // I was in a pattern
+      var followed = user.follow;
+      
+      if (arrayAvailables.indexOf(followed) == -1) {
+          next(user.index)
+      }
+      else {
+        var suggested = arrayTinderMusics[followed];
+        publishMessage(user.id, 
+          {"type": "next-response",
+            "suggested_tm": {
+                        "nickname" : suggested.nickname,
+                        "tm" : suggested.tm
+                      }
+                    });      
+      }
+      // TODO: update the number of followers on the screen
+    }
+    else{
+      next(user.index);
+    }
+  }
+  
   function update(user_index, user_tm) {
     var user = arrayTinderMusics[user_index];
 

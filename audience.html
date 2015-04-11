@@ -22,7 +22,7 @@
 	</head>
 
 	<body><!-- onload="getNextDivName()">-->
-		<div id = "top" class = "top_banner">
+		<div id = "top_banner" class = "top_banner">
 			<div class="section group height_100">
 				<div class="col-left span_2_of_4 center border height_100">
 					<div class = "banner">
@@ -31,15 +31,15 @@
 				</div>
 				<div class="col-right span_2_of_4 center border height_100">
 					<div class = "banner">
-						<span class = "banner_text"><img src="./images/modify_w.png" class = "tenpercent" onclick="randomizeNote()"></span>
+						<span class = "banner_text"><img src="./images/modify_w.png" class = "tenpercent" onclick="modifyPattern()"></span>
 					</div>
 				</div>
 			</div>
 		</div>
-        <canvas id="patternCanvas" class =  "border">
+        <canvas id="patternCanvas" class = "">
         Sorry, canvas not supported
         </canvas>
-        <div id= "submit" class = "bottom_banner2">
+        <div id= "submit_pane" class = "bottom_banner2">
             <div class="section group height_100">
                 <div class="col-left span_2_of_4 center border height_100 ">
                     <div class = "banner">
@@ -49,6 +49,21 @@
                 <div class="col-right span_2_of_4 center border height_100 ">
                     <div class = "banner">
                         <span class = "banner_text responsive_font_size_4"><img src="./images/play.png" class = "tenpercent" onclick="update()"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id= "mingle_pane" class = "bottom_banner2">
+            <div class="section group height_100">
+                <div class="col-left span_2_of_4 center border height_100 ">
+                    <div class = "banner">
+                        <span class = "banner_text responsive_font_size_4"><img src="./images/heart.png" class = "tenpercent" onclick="randomizeNote()"></span>
+                    </div>
+                </div>
+                <div class="col-right span_2_of_4 center border height_100 ">
+                    <div class = "banner">
+                        <span class = "banner_text responsive_font_size_4"><img src="./images/exit.png" class = "tenpercent" onclick="exit()"></span>
                     </div>
                 </div>
             </div>
@@ -75,7 +90,7 @@
 			<div class="section group height_100">
 				<div class="col-left span_2_of_4 center border height_100 ">
 					<div class = "banner">
-						<span class = "banner_text"><img  src="./images/heart.png" class = "tenpercent"></span>
+						<span class = "banner_text"><img  src="./images/mingle.png" class = "tenpercent"onclick="mingle()"></span>
 					</div>
 				</div>
 				<div class="col-right span_2_of_4 center border height_100 ">
