@@ -98,6 +98,9 @@
         case 'whereami':
           inform(message.index);
           break;
+        case 'liked':
+          liked(message.index, message.likedindex); // keep track of likes for each individual. 
+          break;
         default:
           break;
       }
@@ -123,7 +126,9 @@
         'mode' : "editing", // modes: editing, following
         'status' : "unavailable", // status: unavailable, available
         'follow' : "",
-        'followers' : []
+        'followers' : [],
+        'likes': new Array(),
+        'likedby': new Array()
       };
       arrayTinderMusics.push(tm);
       // add to view
@@ -137,6 +142,20 @@
       publishMessage(user_id, {"type": "create-response",
                       "res": "f"});
     }
+  }
+
+  function liked(user_index, liked_index){
+    var user = arrayTinderMusics[liked_index];
+    if ( user.likedby.indexOf(user_index) == -1){
+      user.likedby.push(user_index);
+    }
+
+    user = arrayTinderMusics[user_index]
+    if ( user.likes.indexOf(liked_index) == -1){
+      user.likes.push(liked_index);
+    }
+
+
   }
 
   // update the tinder music and get the next user to follow (get the next?! always?!)
@@ -154,6 +173,7 @@
           {"type": "next-response",
             "suggested_tm": {
                         "nickname" : suggested.nickname,
+                        "index" : suggested.index,
                         "tm" : suggested.tm
                       }
                     });      
@@ -164,7 +184,7 @@
       next(user.index);
     }
   }
-  
+
   function update(user_index, user_tm) {
     var user = arrayTinderMusics[user_index];
 
@@ -193,6 +213,8 @@
           {"type": "next-response",
             "suggested_tm": {
                         "nickname" : suggested.nickname,
+                         "index" : suggested.index,
+
                         "tm" : suggested.tm
                       }
                     });      
@@ -232,6 +254,7 @@
       publishMessage(user.id, {"type": "next-response",
                       "suggested_tm": {
                         "nickname" : suggested.nickname,
+                        "index" : suggested.index,
                         "tm" : suggested.tm
                       }
                     });

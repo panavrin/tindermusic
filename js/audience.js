@@ -23,6 +23,7 @@ var context;
 var compressor;
 var reverb;
 var myIndex;
+var currentIndex;
 var w;
 var h;
 var noteSize;
@@ -332,6 +333,7 @@ function parseMessage( message ) {
       
       patternElse = message.suggested_tm.tm;
       currentNickname = message.suggested_tm.nickname;
+      currentIndex = message.suggested_tm.index;
       $('#screenname_display').text(currentNickname);
 
       for (var i=0; i< patternElse.length-1; i++){
@@ -417,6 +419,10 @@ function update(){
   publishMessage("performer", {type :"update", index: myIndex, tm : pattern});
   $("#waiting-message").css("visibility", "visible");
   $("#submit_pane").css("visibility", "hidden");
+}
+
+function like(){
+  publishMessage("performer", {type :"liked", index:myIndex, likedindex: currentIndex});
 }
 
 function modifyPattern(){
