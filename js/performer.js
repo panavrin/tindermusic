@@ -35,7 +35,7 @@
   // subscribe to a channel
   pubnub.subscribe({
 
-    channel: 'performer,audience',
+    channel: 'snaglee_performer,audience',
     presence: performanceStatus,
     message: parseMessage,
     error: function (error) {
@@ -145,14 +145,24 @@
   }
 
   function liked(user_index, liked_index){
-    var user = arrayTinderMusics[liked_index];
-    if ( user.likedby.indexOf(user_index) == -1){
-      user.likedby.push(user_index);
-    }
 
-    user = arrayTinderMusics[user_index]
-    if ( user.likes.indexOf(liked_index) == -1){
-      user.likes.push(liked_index);
+    // A likes B's tune
+    var user = arrayTinderMusics[liked_index]; // this is B
+    var user2 = arrayTinderMusics[user_index] // this is A
+
+    if ( user.likedby.indexOf(user_index) == -1){ //  if B was not liked by A so far 
+      user.likedby.push(user_index);
+      // notify B that A likes you
+      publishMessage(user.id, {"type" : "liked-response", "nickname": user2.nickname, "index":user2.index})
+    }
+  
+    if ( user2.likes.indexOf(liked_index) == -1){ // if  A did not liked B in the past
+      user2.likes.push(liked_index);
+      if (user.likes.indexOf(user_index) != -1) // B has liked A, too!!
+      {
+        // notify A
+        publishMessage(user2.id, {"type" : "liked-response", "nickname": user.nickname, "index":user.index})    
+      }
     }
 
 

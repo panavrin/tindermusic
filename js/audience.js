@@ -34,6 +34,33 @@ var patternElse = [];
 var patternSize = 5;
 var currentNickname = ""
 
+var liked = new Array();
+
+var myMessages = ['info','warning','error','success', 'like'];
+
+function hideAllMessages() {
+  var messagesHeights = new Array(); // this array will store height for each
+
+  for (i=0; i<myMessages.length; i++) {
+  messagesHeights[i] = $('.' + myMessages[i]).outerHeight(); // fill array
+  //$('.' + myMessages[i]).css('top', -messagesHeights[i]); //move element outside viewport     
+    $('.'+myMessages[i]).animate({top:-messagesHeights[i]}, 500);
+  }
+}
+
+function showMessage(type, message1, message2, autoHide, hideTime) {
+  //  $('.'+ type +'-trigger').click(function(){
+  hideAllMessages();     
+  $("."+type+" .msg_header").text(message1);
+  $("."+type+" .msg_body").text(message2);
+  $('.'+type).animate({top:"0"}, 500);
+   // });
+  if (autoHide){
+    hideTime = hideTime | 2000;
+    setTimeout(hideAllMessages, hideTime);
+  }
+
+}
 
 function BufferLoader(context, urlList, callback) {
   this.context = context;
@@ -233,10 +260,27 @@ return  window.requestAnimationFrame       ||
 
 var pentatonicScale = [0,2,4,7,9];
 var majorScale = [0,2,4,5,7,9,11,12];
+var scaleWeight = [2,1,2,1,2,1,1,2];
 var minorScale = [0,2,3,5,7,8,10,12];
 var selectedScale = majorScale;
+var selectedScaleWeight = scaleWeight;
 var baseNote = 60;
 
+function getPicthIndex(num){
+  
+    var weightSum = 0;
+    for (var i=0; i< selectedScaleWeight.length; i++){
+      weightSum += selectedScaleWeight[i];
+    }
+    var count;
+    var accWeight=0;
+    for (count=0; count< selectedScaleWeight.length; count++){
+      if (num <= accWeight / weightSum)
+        break;
+      accWeight += selectedScaleWeight[count];
+    }
+    return count-1;
+}
 function Note(){
   this.x = 0;
   this.y = 0;
@@ -321,7 +365,6 @@ function parseMessage( message ) {
         myIndex = message.index;
         lastPingTime = Date.now();
         $("#submit_pane").css("visibility", "visible");
-
       }
       else
       {
@@ -348,6 +391,19 @@ function parseMessage( message ) {
         $("#waiting-message").css("visibility", "hidden");
       }
     }
+    else if ( message.type == "liked-response")
+    { 
+      if ( liked.indexOf(message.index) == -1){
+        showMessage('error', 'Awesome!', message.nickname + ' likes your tune!', true, 1000);
+      }
+      else{
+        showMessage('error', "It's a match!", message.nickname + ' likes your tune, too!', true, 1000);
+      }
+    }
+    else if ( message.type == "scale"){
+      baseNote = message.baseNote;
+      selectedScale = message.scale;
+    }
     else{
       console.log("unhandled type:" + message.type);
     }
@@ -359,7 +415,7 @@ function parseMessage( message ) {
 
 function publishMessage(channel, options){
   pubnub.publish({
-    channel: channel,
+    channel: "snaglee_" + channel,
     message: options
   });
 
@@ -423,6 +479,8 @@ function update(){
 
 function like(){
   publishMessage("performer", {type :"liked", index:myIndex, likedindex: currentIndex});
+  liked.push(currentIndex);
+  $("#like_button_area").css("visibility", "hidden");
 }
 
 function modifyPattern(){
@@ -435,6 +493,12 @@ function modifyPattern(){
 function mingle(){
   state = "MINGLE";
   $("#mingle_pane").css("visibility", "visible"); 
+  
+  if ( liked.indexOf(currentIndex) == -1)
+    $("#like_button_area").css("visibility", "visible");
+  else
+    $("#like_button_area").css("visibility", "hidden");
+
   $("#bottom_banner").css("visibility", "hidden");
   $("#top_banner").css("visibility", "hidden");  
   for (var i=0; i < pattern.length; i++){
@@ -451,6 +515,8 @@ function exit(){
   publishMessage("performer", {type :"whereami", index: myIndex});
   $("#waiting-message").css("visibility", "visible");
   $("#mingle_pane").css("visibility", "hidden"); 
+  $("#like_button_area").css("visibility", "hidden");
+
   for (var i=0; i < pattern.length; i++){
     pattern[i].setPosition(originalPattern[i].x, originalPattern[i].y);
     pattern[i].distance = originalPattern[i].distance;
@@ -458,6 +524,22 @@ function exit(){
 }
 
 $(document).ready(function () {
+
+
+// Initially, hide them all
+  hideAllMessages();
+
+  // Show message
+ /* for(var i=0;i<myMessages.length;i++)
+  {
+    showMessage(myMessages[i]);
+  }
+  */
+
+  // When message is clicked, hide it
+  $('.message').click(function(){              
+    $(this).animate({top: -$(this).outerHeight()}, 500);
+  });        
 
   $("#waiting-message").css("visibility", "hidden");
   // resize images 
@@ -567,11 +649,18 @@ $(document).ready(function () {
     
     // Clear the canvas
     ctx.clearRect(0, 0, w, h);
-
+    var weightSum = 0;
+    for (var i=0; i< selectedScaleWeight.length; i++){
+      weightSum += selectedScaleWeight[i];
+    }
+    var accHeight = 0;
     if ( state == "EDIT" || state == "MINGLE" || state == "CHECK"){
        for (var i=0; i< selectedScale.length; i++){
         ctx.beginPath();
-        ctx.rect(0, i * h/selectedScale.length, w, h/selectedScale.length);
+        var height = h * selectedScaleWeight[selectedScale.length - i - 1] / weightSum;
+        
+        ctx.rect(0, accHeight, w, height);
+        accHeight += height;
         if ( i % 2 == 0)
           ctx.fillStyle = '#f8f8f5';
         else
@@ -606,7 +695,7 @@ $(document).ready(function () {
 
       for (var i=0; i< patternElse.length; i++){
       //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
-        drawCircle(ctx,patternElse[i].x * w, patternElse[i].y* h, noteSize, '#ff969d' );
+        drawCircle(ctx,patternElse[i].x * w, patternElse[i].y* h, noteSize-2, '#ff969d' );
         if ( i < patternElse.length-1)
           drawLine(ctx,patternElse[i].x* w, patternElse[i].y* h, patternElse[i+1].x* w, patternElse[i+1].y* h, '#d16970');
         drawCircle(ctx,patternElse[i].x* w, patternElse[i].y* h, noteSize/3, '#d16970' );
@@ -647,7 +736,8 @@ $(document).ready(function () {
 
           var numOsc = Math.floor(pattern[playBarNote].x * maxNumOsc )  + 1;
           var numDetune = Math.floor(pattern[playBarNote].x * detune );
-          var pitchIndex = Math.floor((1 - pattern[playBarNote].y) * selectedScale.length);
+       //   var pitchIndex = Math.floor((1 - pattern[playBarNote].y) * selectedScale.length);
+          var pitchIndex =getPicthIndex(1 - pattern[playBarNote].y);
           var octave = Math.floor(pitchIndex / selectedScale.length);
           var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
              //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
@@ -669,7 +759,8 @@ $(document).ready(function () {
         progress = 0;
         var numOsc = Math.floor(pattern[playBarNote].x * maxNumOsc )  + 1;
         var numDetune = Math.floor(pattern[playBarNote].x * detune );
-        var pitchIndex = Math.floor((1 - pattern[playBarNote].y) * selectedScale.length);
+        //var pitchIndex = Math.floor((1 - pattern[playBarNote].y) * selectedScale.length);
+        var pitchIndex =getPicthIndex(1 - pattern[playBarNote].y);
         var octave = Math.floor(pitchIndex / selectedScale.length);
             
         lastPingTime = currentTime;
@@ -710,7 +801,8 @@ $(document).ready(function () {
 
           var numOsc = Math.floor(patternElse[playBarNoteElse].x * maxNumOsc )  + 1;
           var numDetune = Math.floor(patternElse[playBarNoteElse].x * detune );
-          var pitchIndex = Math.floor((1 - patternElse[playBarNoteElse].y) * selectedScale.length);
+          //var pitchIndex = Math.floor((1 - patternElse[playBarNoteElse].y) * selectedScale.length);
+          var pitchIndex =getPicthIndex(1 - patternElse[playBarNoteElse].y);
           var octave = Math.floor(pitchIndex / selectedScale.length);
           var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
              //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
@@ -732,7 +824,9 @@ $(document).ready(function () {
         progressElse = 0;
         var numOsc = Math.floor(patternElse[playBarNoteElse].x * maxNumOsc )  + 1;
         var numDetune = Math.floor(patternElse[playBarNoteElse].x * detune );
-        var pitchIndex = Math.floor((1 - patternElse[playBarNoteElse].y) * selectedScale.length);
+//        var pitchIndex = Math.floor((1 - patternElse[playBarNoteElse].y) * selectedScale.length);
+        var pitchIndex =getPicthIndex(1 - patternElse[playBarNoteElse].y);
+
         var octave = Math.floor(pitchIndex / selectedScale.length);
             
         lastPingTimeElse = currentTime;
