@@ -401,8 +401,17 @@ function parseMessage( message ) {
       }
     }
     else if ( message.type == "scale"){
-      baseNote = message.baseNote;
-      selectedScale = message.scale;
+      if ( message.probability >=0 )
+      {
+        if ( message.probability > Math.random()){
+          baseNote = message.baseNote;
+          selectedScale = message.scale;
+        }
+      }
+      else{
+        baseNote = message.baseNote;
+        selectedScale = message.scale; 
+      }
     }
     else{
       console.log("unhandled type:" + message.type);
