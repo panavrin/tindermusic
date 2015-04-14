@@ -334,8 +334,8 @@ var my_id = PUBNUB.uuid();
 
 // Initialize with Publish & Subscribe Keys
 var pubnub = PUBNUB.init({
-    publish_key: 'pub-c-b1da18b4-71e2-4982-9ba6-e81abf986cc5',
-    subscribe_key: 'sub-c-48b60458-b879-11e4-8e2f-02ee2ddab7fe',
+    publish_key: 'demo',
+    subscribe_key: 'demo',
     uuid: my_id, 
 });
 
