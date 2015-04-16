@@ -63,7 +63,10 @@ var DEBUG = false;
       channel: channel,
       message: options
     });
-
+    pubnub.publish({
+      channel: "log",
+      message: options
+    });
     if(DEBUG)console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
   }
 
@@ -155,6 +158,11 @@ var DEBUG = false;
     }
   }
 
+  function updateDiv(index){
+    user = arrayTinderMusics[index];
+    $('#'+index).text(user.nickname + "," + user.followers.length + "," + user.likedby.length);
+  }
+
   function liked(user_index, liked_index){
 
     // A likes B's tune
@@ -176,6 +184,8 @@ var DEBUG = false;
       }
     }
 
+
+
     // update screen with the most liked
     if (user.likedby.length > likesMostLiked ) {
       /*
@@ -190,11 +200,13 @@ var DEBUG = false;
 
       indexMostLiked = user.index;
       likesMostLiked = user.likedby.length;
-      console.log("most liekd one: " + user.nickname);
+      $("#most-liked").text(user.nickname);
+      //console.log("most liekd one: " + user.nickname);
       // this is the most liked now. 
       //var divMostLiked = document.getElementById(indexMostLiked);
       //divMostLiked.style.border = borderMostLiked+"% pink groove";
     }
+    updateDiv(liked_index);
 
   }
 
@@ -279,6 +291,7 @@ var DEBUG = false;
       if (follower_index != -1) {
         ex_followed.followers.splice(follower_index,1);
       }
+
       // TODO: update the number of followers on the screen
 
       if (ex_followed.index == indexMostFollowed) {
@@ -288,6 +301,9 @@ var DEBUG = false;
         var divExFollowed = document.getElementById(ex_followed.index);
         divExFollowed.style.border = ex_followed.followers.length+"px grey solid";
       }*/
+      updateDiv(user.follow);
+
+
     }
 
     if ( suggested_index != -1 ) {
@@ -296,6 +312,9 @@ var DEBUG = false;
       // follow
       user.follow = suggested_index;
       suggested.followers.push(user.index);
+
+      updateDiv(suggested_index);
+
       // TODO: update the number of followers on the screen
       // if it is the most followed now
       if (suggested.followers.length > followersMostFollowed) {
@@ -309,7 +328,8 @@ var DEBUG = false;
 
         indexMostFollowed = suggested.index;
         followersMostFollowed = suggested.followers.length;
-        console.log("Most Followed one : " + suggested.nickname);
+        $("#most-followed").text(suggested.nickname);
+        //console.log("Most Followed one : " + suggested.nickname);
         // updating the new one
        /* if (indexMostFollowed != indexMostLiked && indexMostFollowed >=0) { 
         // we cant change the style of the most liked here
@@ -425,7 +445,7 @@ var DEBUG = false;
     } else {
       newDiv.className = 'unavailable-editing';
     }
-    newDiv.appendChild(document.createTextNode(user.nickname));
+    newDiv.appendChild(document.createTextNode(user.nickname  ));
     // onclick set as available
     newDiv.onclick = function() {
       // the user can go to available mode only when it is playing, yeah?!
@@ -456,7 +476,7 @@ var DEBUG = false;
     } else {
       newDiv.className = 'available-editing';
     }
-    newDiv.appendChild(document.createTextNode(user.nickname));
+    newDiv.appendChild(document.createTextNode(user.nickname + "," + user.followers.length + "," +user.likedby.length));
     // onclick, set as Unavailable
     newDiv.onclick = function() {
       var actualIndex = arrayAvailables.indexOf(index);

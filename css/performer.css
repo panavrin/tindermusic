@@ -1,7 +1,10 @@
 body {
-  backgroung-color: black;
+  background-color: black;
   margin: 0 0;
   padding: 0 0;
+}
+.white{
+  color:white;
 }
 #availables {
   background-color: black;
