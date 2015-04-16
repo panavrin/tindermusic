@@ -1,0 +1,5 @@
+publishMessage("audience", {type:"script", script:"showMessage('info','this is testing', true, 2000)"});
+
+publishMessage("audience", {type:"script", script:"refresh()"});
+
+publishMessage("audience", {type:"sound-toggle"});

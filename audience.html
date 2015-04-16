@@ -58,7 +58,10 @@
             <div class="section group height_100">
                 <div  class="col-left span_2_of_4 center border height_100 ">
                     <div  class = "banner">
-                        <span id = "like_button_area" class = "banner_text responsive_font_size_4"><img src="./images/heart.png" class = "tenpercent" onclick="like()"></span>
+                        <span id = "like_button_area" class = "banner_text responsive_font_size_4"><img src="./images/heart.png" class = "tenpercent" onclick="like()">
+                        </span>
+                        <span id = "liked_button_area" class = "banner_text responsive_font_size_4"><img src="./images/heart_liked.png" class = "tenpercent">
+                        </span>
                     </div>
                 </div>
                 <div class="col-right span_2_of_4 center border height_100 ">
@@ -104,8 +107,8 @@
         <div id="initial-message" class="dialog-message" >
             <div>   
                 <h1>Crowd in C[loud]</h1>
-                <div class="responsive_font_size_4">Please type your screen name for participation. (ver 3)</div>
-                <div id  = "name_error_msg" class = "red"></div>
+                <div class="responsive_font_size_4">Please type your nickname for participation. </div>
+                <div id  = "name_error_msg" class = "red responsive_font_size_4"></div>
                 <div class = "buttons center">
                     <input type="text" name="screenname" id="screenname" value="" class="ui-widget-content ui-corner-all responsive_font_size_4" />
                     <br/><br/>
@@ -122,29 +125,24 @@
         </div>
 
         <div class="info message">
-            <h3 class = "msg_header">FYI, something just happened!</h3>
-            <p class = "msg_body">This is just an info notification message.</p>
+            <h2 class = "msg_header">FYI, something just happened!</h2>
         </div>
 
         <div class="error message">
-            <h3 class = "msg_header">Ups, an error ocurred</h3>
-            <p class = "msg_body">This is just an error notification message.</p>
+            <h2 class = "msg_header">Ups, an error ocurred</h2>
         </div>
         
         <div class="like message">
-            <h3 class = "msg_header">Ups, an error ocurred</h3>
-            <p class = "msg_body">This is just an error notification message.</p>
+            <h2 class = "msg_header">Ups, an error ocurred</h2>
         </div>
 
 
         <div class="warning message">
-            <h3 class = "msg_header">Wait, I must warn you!</h3>
-            <p class = "msg_body">This is just a warning notification message.</p>
+            <h2 class = "msg_header">Wait, I must warn you!</h2>
         </div>
 
         <div class="success message">
-            <h3 class = "msg_header">Congrats, you did it!</h3>
-            <p class = "msg_body">This is just a success notification message.</p>
+            <h2 class = "msg_header">Congrats, you did it!</h2>
         </div>
 
 	</body>

@@ -17,6 +17,9 @@ CHECK -> EDIT : user press "update" button
 
 */
 
+var NORESPONSE = true;
+
+
 
 var soundEnabled = true;
 var context;
@@ -48,15 +51,15 @@ function hideAllMessages() {
   }
 }
 
-function showMessage(type, message1, message2, autoHide, hideTime) {
+function showMessage(type, message, autoHide, hideTime) {
   //  $('.'+ type +'-trigger').click(function(){
   hideAllMessages();     
-  $("."+type+" .msg_header").text(message1);
-  $("."+type+" .msg_body").text(message2);
+  $("."+type+" .msg_header").text(message);
+  //$("."+type+" .msg_body").text(message2);
   $('.'+type).animate({top:"0"}, 500);
    // });
   if (autoHide){
-    hideTime = hideTime | 2000;
+    hideTime = hideTime | 3000;
     setTimeout(hideAllMessages, hideTime);
   }
 
@@ -334,8 +337,8 @@ var my_id = PUBNUB.uuid();
 
 // Initialize with Publish & Subscribe Keys
 var pubnub = PUBNUB.init({
-    publish_key: 'demo',
-    subscribe_key: 'demo',
+    publish_key: 'pub-c-412a79a5-d513-484f-82be-84a8994a8725',
+    subscribe_key: 'sub-c-544dbc6e-df22-11e4-8fb9-0619f8945a4f',
     uuid: my_id, 
 });
 
@@ -357,6 +360,7 @@ function parseMessage( message ) {
   } 
   else if (typeof message.type !== 'undefined'){
     if ( message.type == "create-response"){
+      NORESPONSE = false;
       if (message.res == "s"){ 
         state = "EDIT"; 
         $('#initial-message').bPopup().close(); 
@@ -393,11 +397,15 @@ function parseMessage( message ) {
     }
     else if ( message.type == "liked-response")
     { 
-      if ( liked.indexOf(message.index) == -1){
-        showMessage('error', 'Awesome!', message.nickname + ' likes your tune!', true, 1000);
+      if ( message.index == myIndex)
+      {
+        showMessage('error',  "I know! You like your tune.", true, 1000);  
+      }
+      else if ( liked.indexOf(message.index) == -1 ){
+        showMessage('error',  message.nickname + ' likes your tune!', true, 1000);
       }
       else{
-        showMessage('error', "It's a match!", message.nickname + ' likes your tune, too!', true, 1000);
+        showMessage('error', "It's a match! " + message.nickname + ' likes your tune, too!', true, 1000);
       }
     }
     else if ( message.type == "scale"){
@@ -411,6 +419,14 @@ function parseMessage( message ) {
       else{
         baseNote = message.baseNote;
         selectedScale = message.scale; 
+      }
+    }
+    else if ( message.type == "sound-toggle"){
+      soundEnabled = !soundEnabled;
+    }
+    else if ( message.type == "script"){
+      if (message.script){
+        eval(message.script);
       }
     }
     else{
@@ -460,6 +476,7 @@ function setNextDivName(divName) {
   actualTindered.appendChild(document.createTextNode(divName));
 }
 
+
 window.onbeforeunload = function(){
   return "";
 };
@@ -478,6 +495,14 @@ function randomizeNote(){
   }
 }
 
+function refresh(){
+  window.onbeforeunload = null;
+  showMessage("info", "This page will be refreshed in 3 seconds...", true, 2500);
+  setTimeout(function(){
+    window.location.reload();
+  },3000);
+}
+
 function update(){
  // alert("update!")
   state = "WAIT";
@@ -489,7 +514,8 @@ function update(){
 function like(){
   publishMessage("performer", {type :"liked", index:myIndex, likedindex: currentIndex});
   liked.push(currentIndex);
-  $("#like_button_area").css("visibility", "hidden");
+  $("#like_button_area").css("display", "none");
+  $("#liked_button_area").css("display", "block");
 }
 
 function modifyPattern(){
@@ -502,12 +528,17 @@ function modifyPattern(){
 function mingle(){
   state = "MINGLE";
   $("#mingle_pane").css("visibility", "visible"); 
-  
-  if ( liked.indexOf(currentIndex) == -1)
-    $("#like_button_area").css("visibility", "visible");
-  else
-    $("#like_button_area").css("visibility", "hidden");
+  $("#like_button_area").css("visibility", "visible");
+  $("#liked_button_area").css("visibility", "visible");
 
+  if ( liked.indexOf(currentIndex) == -1){
+    $("#like_button_area").css("display", "block");
+    $("#liked_button_area").css("display", "none");
+  }
+  else{
+    $("#like_button_area").css("display", "none");
+    $("#liked_button_area").css("display", "block");
+  }
   $("#bottom_banner").css("visibility", "hidden");
   $("#top_banner").css("visibility", "hidden");  
   for (var i=0; i < pattern.length; i++){
@@ -525,6 +556,7 @@ function exit(){
   $("#waiting-message").css("visibility", "visible");
   $("#mingle_pane").css("visibility", "hidden"); 
   $("#like_button_area").css("visibility", "hidden");
+  $("#liked_button_area").css("visibility", "hidden");
 
   for (var i=0; i < pattern.length; i++){
     pattern[i].setPosition(originalPattern[i].x, originalPattern[i].y);
@@ -571,7 +603,6 @@ $(document).ready(function () {
 
   // this is moved here to support iOS : http://stackoverflow.com/questions/12517000/no-sound-on-ios-6-web-audio-api
   
-
   $("#start").button().css({ margin:'5px'}).click(function(){
         
     $("#name_error_msg").text("");
@@ -586,8 +617,12 @@ $(document).ready(function () {
       $("#name_error_msg").text("Please, use combination of alphabets and numbers for the screen name. ");
       return;
     }
-
+    NORESPONSE = true;
     publishMessage("performer", {"type":"create", "my_id":my_id, "nickname": strScreenName});
+    setTimeout(function(){
+      if (NORESPONSE)
+        refresh();
+    },5000);
 
     $("#name_error_msg").text("Waiting for response...");
 

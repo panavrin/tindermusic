@@ -1,4 +1,8 @@
 // main code
+window.onbeforeunload = function(){
+  return "";
+};
+
 
   var performanceStarted = false;
 
@@ -165,7 +169,7 @@
 
     if ( user2.likes.indexOf(liked_index) == -1){ // if  A did not liked B in the past
       user2.likes.push(liked_index);
-      if (user.likes.indexOf(user_index) != -1) // B has liked A, too!!
+      if (user.likes.indexOf(user_index) != -1 && user_index != liked_index) // B has liked A, too!!
       {
         // notify A
         publishMessage(user2.id, {"type" : "liked-response", "nickname": user.nickname, "index":user.index})
