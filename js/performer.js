@@ -3,7 +3,7 @@ window.onbeforeunload = function(){
   return "";
 };
 
-
+var DEBUG = false;
   var performanceStarted = false;
 
   var indexMostLiked = -1;
@@ -64,7 +64,7 @@ window.onbeforeunload = function(){
       message: options
     });
 
-    console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
+    if(DEBUG)console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
   }
 
   // send the performance status
@@ -90,7 +90,7 @@ window.onbeforeunload = function(){
 
   // parse messages received from PubNub platform
   function parseMessage( message ) {
-    console.log("message - received:" + JSON.stringify(message));
+    if(DEBUG)console.log("message - received:" + JSON.stringify(message));
     if (typeof message.type !== 'undefined') {
 
       switch(message.type) {
@@ -177,18 +177,23 @@ window.onbeforeunload = function(){
     }
 
     // update screen with the most liked
-    if (user.likedby.length >= likesMostLiked) {
+    if (user.likedby.length > likesMostLiked ) {
+      /*
       var oldDivMostLiked = document.getElementById(indexMostLiked);
-      if (indexMostLiked == indexMostFollowed) { // the old most liked can be the most followed
+      if (indexMostLiked == indexMostFollowed && indexMostLiked >=0) { // the old most liked can be the most followed
         oldDivMostLiked.style.border = borderMostFollowed+"px pink double";
       } else {
-        oldDivMostLiked.style.border = arrayTinderMusics[indexMostLiked].followers.length+"px grey solid";
+        if ( indexMostLiked >=0)
+          oldDivMostLiked.style.border = arrayTinderMusics[indexMostLiked].followers.length+"px grey solid";
       }
+      */
 
-      indexMostLiked = user.id;
+      indexMostLiked = user.index;
       likesMostLiked = user.likedby.length;
-      var divMostLiked = document.getElementById(indexMostLiked);
-      divMostLiked.style.border = borderMostLiked+"% pink groove";
+      console.log("most liekd one: " + user.nickname);
+      // this is the most liked now. 
+      //var divMostLiked = document.getElementById(indexMostLiked);
+      //divMostLiked.style.border = borderMostLiked+"% pink groove";
     }
 
   }
@@ -276,12 +281,13 @@ window.onbeforeunload = function(){
       }
       // TODO: update the number of followers on the screen
 
-      if (ex_followed.id == indexMostFollowed) {
+      if (ex_followed.index == indexMostFollowed) {
         followersMostFollowed = followersMostFollowed - 1;
-      } else if (ex_followed.id != indexMostLiked) { // we cant change the most liked style here
-        var divExFollowed = document.getElementById(ex_followed.id);
+      } /*else if (ex_followed.index != indexMostLiked) { 
+      // we cant change the most liked style here
+        var divExFollowed = document.getElementById(ex_followed.index);
         divExFollowed.style.border = ex_followed.followers.length+"px grey solid";
-      }
+      }*/
     }
 
     if ( suggested_index != -1 ) {
@@ -292,24 +298,28 @@ window.onbeforeunload = function(){
       suggested.followers.push(user.index);
       // TODO: update the number of followers on the screen
       // if it is the most followed now
-      if (suggested.followers.length >= followersMostFollowed) {
+      if (suggested.followers.length > followersMostFollowed) {
         // updating the old most followed
-        if (indexMostFollowed != indexMostLiked) { // we cant change the style of the most liked here
+       /* if (indexMostFollowed != indexMostLiked && indexMostFollowed >=0) { 
+        // we cant change the style of the most liked here
           var divOldMostFollowed = document.getElementById(indexMostFollowed);
           divOldMostFollowed.style.border = suggested.followers.length+"px grey solid";
         }
+        */
 
-        indexMostFollowed = suggested.id;
+        indexMostFollowed = suggested.index;
         followersMostFollowed = suggested.followers.length;
+        console.log("Most Followed one : " + suggested.nickname);
         // updating the new one
-        if (indexMostFollowed != indexMostLiked) { // we cant change the style of the most liked here
+       /* if (indexMostFollowed != indexMostLiked && indexMostFollowed >=0) { 
+        // we cant change the style of the most liked here
           var divMostFollowed = document.getElementById(indexMostFollowed);
           divMostFollowed.style.border = borderMostFollowed+"px pink double";
-        }
-      } else if (suggested.id != indexMostLiked) {
-          var divFollowed = document.getElementById(suggested.id);
-          divFollowed.style.border = suggested.followers.length+"px grey solid");
-      }
+        }*/
+      } /*else if (suggested.index != indexMostLiked) {
+          var divFollowed = document.getElementById(suggested.index);
+          divFollowed.style.border = suggested.followers.length+"px grey solid";
+      }*/
 
       // response
       publishMessage(user.id, {"type": "next-response",
