@@ -1,20 +1,22 @@
-/*body {
+body {
+  backgroung-color: black;
   margin: 0 0;
   padding: 0 0;
-}*/
+}
 #availables {
   background-color: black;
-  color: grey;
+  color: black;
   float: left;
   width: 64%;
   height: auto;
 }
 
 #unavailables {
-  background-color: blue;
+  background-color: white;
   float:right;
   width: 34%;
   height: auto;
+  border: 10px grey dashed;
 }
 
 .unavailable {
@@ -32,7 +34,7 @@
 }
 
 .available {
-  background-color: red;
+  background-color: white;
   width: 20%;
   float: left;
   padding: 10px;
@@ -40,7 +42,7 @@
 }
 
 .available-editing {
-  background-color: brown;
+  background-color: grey;
   width: 20%;
   float: left;
   padding: 10px;

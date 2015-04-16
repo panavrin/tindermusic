@@ -2,6 +2,13 @@
 
   var performanceStarted = false;
 
+  var indexMostLiked = -1;
+  var likesMostLiked = 0;
+  var indexMostFollowed = -1;
+  var followersMostFollowed = 0;
+  var borderMostLiked = 50;
+  var borderMostFollowed = 40;
+
   var arrayUniqueNicknames = new Array();
   var arrayTinderMusics = new Array();
   var arrayAvailables = new Array();
@@ -58,7 +65,7 @@
 
   // send the performance status
   function performanceStatus( message ) {
-    
+
     // if the method is called from presence callback
     if (typeof message.uuid !== 'undefined') {
         publishMessage(message.uuid,{"type": "performance",
@@ -99,7 +106,7 @@
           inform(message.index);
           break;
         case 'liked':
-          liked(message.index, message.likedindex); // keep track of likes for each individual. 
+          liked(message.index, message.likedindex); // keep track of likes for each individual.
           break;
         default:
           break;
@@ -148,23 +155,31 @@
 
     // A likes B's tune
     var user = arrayTinderMusics[liked_index]; // this is B
-    var user2 = arrayTinderMusics[user_index] // this is A
+    var user2 = arrayTinderMusics[user_index]; // this is A
 
-    if ( user.likedby.indexOf(user_index) == -1){ //  if B was not liked by A so far 
+    if ( user.likedby.indexOf(user_index) == -1){ //  if B was not liked by A so far
       user.likedby.push(user_index);
       // notify B that A likes you
       publishMessage(user.id, {"type" : "liked-response", "nickname": user2.nickname, "index":user2.index})
     }
-  
+
     if ( user2.likes.indexOf(liked_index) == -1){ // if  A did not liked B in the past
       user2.likes.push(liked_index);
       if (user.likes.indexOf(user_index) != -1) // B has liked A, too!!
       {
         // notify A
-        publishMessage(user2.id, {"type" : "liked-response", "nickname": user.nickname, "index":user.index})    
+        publishMessage(user2.id, {"type" : "liked-response", "nickname": user.nickname, "index":user.index})
       }
     }
 
+    if (user.likedby.length >= likesMostLiked) {
+      var oldDivMostLiked = document.getElementById(indexMostLiked);
+      oldDivMostLiked.style.border = arrayTinderMusics[indexMostLiked].followers.length+"px grey solid";
+
+      indexMostLiked = user.id;
+      var divMostLiked = document.getElementById(indexMostLiked);
+      divMostLiked.style.border = borderMostLiked+"% pink groove";
+    }
 
   }
 
@@ -173,20 +188,20 @@
     var user = arrayTinderMusics[user_index];
     if ( typeof(user.follow) == 'number' ) { // I was in a pattern
       var followed = user.follow;
-      
+
       if (arrayAvailables.indexOf(followed) == -1) {
           next(user.index)
       }
       else {
         var suggested = arrayTinderMusics[followed];
-        publishMessage(user.id, 
+        publishMessage(user.id,
           {"type": "next-response",
             "suggested_tm": {
                         "nickname" : suggested.nickname,
                         "index" : suggested.index,
                         "tm" : suggested.tm
                       }
-                    });      
+                    });
       }
       // TODO: update the number of followers on the screen
     }
@@ -209,17 +224,17 @@
     } else {
       document.getElementById(user.index).className = 'available';
     }
-    
-    
+
+
     if ( typeof(user.follow) == 'number' ) { // I was in a pattern
       var followed = user.follow;
-      
+
       if (arrayAvailables.indexOf(followed) == -1) {
           next(user.index)
       }
       else {
         var suggested = arrayTinderMusics[followed];
-        publishMessage(user.id, 
+        publishMessage(user.id,
           {"type": "next-response",
             "suggested_tm": {
                         "nickname" : suggested.nickname,
@@ -227,7 +242,7 @@
 
                         "tm" : suggested.tm
                       }
-                    });      
+                    });
       }
       // TODO: update the number of followers on the screen
     }
@@ -243,13 +258,20 @@
     suggested_index = get_next_user_to_follow(user_index);
 
     if ( typeof(user.follow) == 'number' ) {
-      var ex_followed = user.follow;
+      var ex_followed = arrayTinderMusics[user.follow];
       // unfollow the older
-      var follower_id = arrayTinderMusics[ex_followed].followers.indexOf[user.index];
-      if (follower_id != -1) {
-        arrayTinderMusics[ex_followed].followers.splice(follower_id,1);
+      var follower_index = ex_followed.followers.indexOf[user.index];
+      if (follower_index != -1) {
+        ex_followed.followers.splice(follower_index,1);
       }
       // TODO: update the number of followers on the screen
+
+      if (ex_followed.id == indexMostFollowed) {
+        followersMostFollowed = followersMostFollowed - 1;
+      } else if (ex_followed.id != indexMostLiked) { // we cant change the most liked style here
+        var divExFollowed = document.getElementById(ex_followed.id);
+        divExFollowed.style.border = ex_followed.followers.length+"px grey solid";
+      }
     }
 
     if ( suggested_index != -1 ) {
@@ -259,6 +281,25 @@
       user.follow = suggested_index;
       suggested.followers.push(user.index);
       // TODO: update the number of followers on the screen
+      // if it is the most followed now
+      if (suggested.followers.length >= followersMostFollowed) {
+        // updating the old most followed
+        if (indexMostFollowed != indexMostLiked) { // we cant change the style of the most liked here
+          var divOldMostFollowed = document.getElementById(indexMostFollowed);
+          divOldMostFollowed.style.border = suggested.followers.length+"px grey solid";
+        }
+
+        indexMostFollowed = suggested.id;
+        followersMostFollowed = suggested.followers.length;
+        // updating the new one
+        if (indexMostFollowed != indexMostLiked) { // we cant change the style of the most liked here
+          var divMostFollowed = document.getElementById(indexMostFollowed);
+          divMostFollowed.style.border = borderMostFollowed+"px pink double";
+        }
+      } else if (suggested.id != indexMostLiked) {
+          var divFollowed = document.getElementById(suggested.id);
+          divFollowed.style.border = suggested.followers.length+"px grey solid");
+      }
 
       // response
       publishMessage(user.id, {"type": "next-response",
@@ -268,18 +309,18 @@
                         "tm" : suggested.tm
                       }
                     });
-      
+
     } else {
       // there is no user to follow
    /*   user.follow = "";
       publishMessage(user.id, {"type": "next-response",
                       "suggested_tm": ""
             });
-     */       
-      // keep track of waiting people 
+     */
+      // keep track of waiting people
       arrayWaitingPeople.push(user.index);
 
-      
+
     }
   }
 
@@ -330,13 +371,13 @@
     publishMessage(user.id, {"type": "editing-response",
                     "tm" : user.tm
           });
-    
+
 
     // inform the followers
     for ( i = 0; i < user.followers.length; i++) {
-      publishMessage(arrayTinderMusics[ user.followers[i] ].id, 
+      publishMessage(arrayTinderMusics[ user.followers[i] ].id,
         {"type": "user-editing"});
-    
+
     }
   }
 
@@ -350,7 +391,7 @@
     if ( user.status == 'available' ) {
       user.status = 'unavailable';
       for ( i = 0; i < user.followers.length; i++) {
-        publishMessage(arrayTinderMusics[ user.followers[i] ].id, 
+        publishMessage(arrayTinderMusics[ user.followers[i] ].id,
         {"type": "user-unavailable"});
       }
     } else if ( user.status == 'unavailable') {
@@ -411,7 +452,7 @@
 
     if ( arrayWaitingPeople.length > 0){
       for(var i=0; i< arrayWaitingPeople.length; i++){
-        next(arrayWaitingPeople[i]); 
+        next(arrayWaitingPeople[i]);
       }
       arrayWaitingPeople = new Array();
     }
