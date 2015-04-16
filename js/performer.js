@@ -172,11 +172,17 @@
       }
     }
 
+    // update screen with the most liked
     if (user.likedby.length >= likesMostLiked) {
       var oldDivMostLiked = document.getElementById(indexMostLiked);
-      oldDivMostLiked.style.border = arrayTinderMusics[indexMostLiked].followers.length+"px grey solid";
+      if (indexMostLiked == indexMostFollowed) { // the old most liked can be the most followed
+        oldDivMostLiked.style.border = borderMostFollowed+"px pink double";
+      } else {
+        oldDivMostLiked.style.border = arrayTinderMusics[indexMostLiked].followers.length+"px grey solid";
+      }
 
       indexMostLiked = user.id;
+      likesMostLiked = user.likedby.length;
       var divMostLiked = document.getElementById(indexMostLiked);
       divMostLiked.style.border = borderMostLiked+"% pink groove";
     }
