@@ -40,6 +40,8 @@ window.onbeforeunload = function(){
   var pubnub = PUBNUB.init({
     publish_key: 'pub-c-b1da18b4-71e2-4982-9ba6-e81abf986cc5',
     subscribe_key: 'sub-c-48b60458-b879-11e4-8e2f-02ee2ddab7fe',
+    publish_key: 'pub-c-412a79a5-d513-484f-82be-84a8994a8725',
+    subscribe_key: 'sub-c-544dbc6e-df22-11e4-8fb9-0619f8945a4f',
     uuid: my_id
   });
 
