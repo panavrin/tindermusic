@@ -3,7 +3,8 @@
 // PubNub code
 // Get an unique pubnub id
 var state = "NAME"; // it is either NAME, EDIT, WAIT, CHECK, MINGLE
-
+var DEBUG = true;
+var performerState = "STANDBY";
 /*
 
 State Diagram 
@@ -272,12 +273,12 @@ var baseNote = 60;
 function getPicthIndex(num){
   
     var weightSum = 0;
-    for (var i=0; i< selectedScaleWeight.length; i++){
+    for (var i=0; i< selectedScale.length; i++){
       weightSum += selectedScaleWeight[i];
     }
     var count;
     var accWeight=0;
-    for (count=0; count< selectedScaleWeight.length; count++){
+    for (count=0; count< selectedScale.length; count++){
       if (num <= accWeight / weightSum)
         break;
       accWeight += selectedScaleWeight[count];
@@ -354,7 +355,7 @@ pubnub.subscribe({
 });
 
 function parseMessage( message ) {
-  console.log("message - received:" + JSON.stringify(message));
+  if(DEBUG)console.log("message - received:" + JSON.stringify(message));
   if (typeof message.nextDivName !== 'undefined') {
     setNextDivName(message.nextDivName);
   } 
@@ -414,19 +415,40 @@ function parseMessage( message ) {
         if ( message.probability > Math.random()){
           baseNote = message.baseNote;
           selectedScale = message.scale;
+          showMessage("info", "The performer changed the scale.", true);
         }
       }
       else{
         baseNote = message.baseNote;
         selectedScale = message.scale; 
+        showMessage("info", "The performer changed the scale.", true);
       }
     }
     else if ( message.type == "sound-toggle"){
-      soundEnabled = !soundEnabled;
+      soundEnabled = message.on;
     }
     else if ( message.type == "script"){
       if (message.script){
-        eval(message.script);
+        try {
+          eval(message.script);
+        } catch (e) {
+          console.log(e);     
+        }
+      }
+
+
+    }
+    else if (message.type == "state-response"){
+      soundEnabled = message.sound;
+      performerState = message.state;
+      if ( performerState == "STANDBY"){
+  showMessage("warning", "STANDBY, Crowd in C is about to start.");
+        $("#STANDBY").css("visibility", "visible");
+      }
+      else if (performerState == "GOLIVE"){
+        hideAllMessages();
+        showMessage("success", "Let's go live!", true);
+        $("#STANDBY").css("visibility", "hidden");
       }
     }
     else{
@@ -440,16 +462,11 @@ function parseMessage( message ) {
 
 function publishMessage(channel, options){
   pubnub.publish({
-    channel: "snaglee_" + channel,
+    channel: "snaglee2_" + channel,
     message: options
   });
 
-  pubnub.publish({
-    channel: "log",
-    message: options
-  });
-
-  console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
+  if(DEBUG)console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
 }
 
 
@@ -568,6 +585,27 @@ function exit(){
     pattern[i].distance = originalPattern[i].distance;
   }
 }
+//it is either NAME, EDIT, WAIT, CHECK, MINGLE
+
+function stateTransition(_state){
+  state = _state;
+  switch(state){
+    case "NAME":
+    break;
+    case "EDIT":
+    break;
+    case "WAIT":
+    break;
+    case "CHECK":
+    break;
+    case "MINGLE":
+    break;
+    default: 
+    if(DEBUG) alert("unknown state:" + _state);
+    break;
+  }
+  return;
+}
 
 $(document).ready(function () {
 
@@ -587,13 +625,21 @@ $(document).ready(function () {
     $(this).animate({top: -$(this).outerHeight()}, 500);
   });        
 
-  $("#waiting-message").css("visibility", "hidden");
+
   // resize images 
+
+  $("#waiting-message").css("visibility", "hidden");
+
 
   $(".tenpercent").each(function() {
     var height =  window.innerHeight * 0.08; // Max width for the image
     $(this).css("height", height);
   });
+
+  setTimeout(function(){publishMessage("performer", {type:"state", my_id:my_id});},2000);
+
+  
+
 
   // Parse messages received from PubNub platform
   
@@ -629,6 +675,7 @@ $(document).ready(function () {
         refresh();
     },5000);
 
+
     $("#name_error_msg").text("Waiting for response...");
 
     //$('#initial-message').bPopup().close();
@@ -654,6 +701,8 @@ $(document).ready(function () {
     testOsc.connect(compressor);
     testOsc.start(0);
     testOsc.stop(context.currentTime + 0.3);
+
+
   });
   
   var playBarNote = -1;
@@ -699,7 +748,7 @@ $(document).ready(function () {
     // Clear the canvas
     ctx.clearRect(0, 0, w, h);
     var weightSum = 0;
-    for (var i=0; i< selectedScaleWeight.length; i++){
+    for (var i=0; i< selectedScale.length; i++){
       weightSum += selectedScaleWeight[i];
     }
     var accHeight = 0;

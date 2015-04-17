@@ -1,53 +1,14 @@
 body {
-  background-color: black;
-  margin: 0 0;
+  background-color: white;
+  margin: 10px;
   padding: 0 0;
+  font-family: Helvetica, Geneva, Arial,SunSans-Regular, sans-serif 
 }
+
+
+h1,h2,h3,h4 {
+}
+
 .white{
   color:white;
-}
-#availables {
-  background-color: black;
-  color: black;
-  float: left;
-  width: 64%;
-  height: auto;
-}
-
-#unavailables {
-  background-color: white;
-  float:right;
-  width: 34%;
-  height: auto;
-  border: 10px grey dashed;
-}
-
-.unavailable {
-  background-color: yellow;
-  width: 50%;
-  padding: 10px;
-  margin: 0 auto 10px;
-}
-
-.unavailable-editing {
-  background-color: orange;
-  width: 50%;
-  padding: 10px;
-  margin: 0 auto 10px;
-}
-
-.available {
-  background-color: white;
-  width: 20%;
-  float: left;
-  padding: 10px;
-  margin: 10px;
-}
-
-.available-editing {
-  background-color: grey;
-  width: 20%;
-  float: left;
-  padding: 10px;
-  margin: 10px;
 }

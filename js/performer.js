@@ -2,8 +2,11 @@
 window.onbeforeunload = function(){
   return "";
 };
+function getRandomInt (min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
-var DEBUG = false;
+var DEBUG = true;
   var performanceStarted = false;
 
   var indexMostLiked = -1;
@@ -13,6 +16,8 @@ var DEBUG = false;
   var borderMostLiked = 50;
   var borderMostFollowed = 40;
 
+  var soundEnabled = false;
+  var state = "STANDBY"; // STANDBY, GOLIVE, END
   var arrayUniqueNicknames = new Array();
   var arrayTinderMusics = new Array();
   var arrayAvailables = new Array();
@@ -20,15 +25,51 @@ var DEBUG = false;
   var arrayWaitingPeople = new Array();;
   var divUnavailables = null;
   var divAvailables = null;
-
+  var randomNumber ;
+  var STOPWORKING = false;
   // load some variables after loading the page
   function load() {
-    divAvailables = document.getElementById('availables');
-    divUnavailables = document.getElementById('unavailables');
+    divAvailables = $("#availables");
+    divUnavailables = $("#unavailables");
 
     // my_id is defined by pubnub
-    var divUsername = document.getElementById('username');
-    divUsername.appendChild(document.createTextNode("username: "+my_id));
+  //  var divUsername = document.getElementById('username');
+//    divUsername.appendChild(document.createTextNode("username: "+my_id));
+    soundEnabled = false;
+    $( "#radio" ).buttonset();
+    $( "#chat" ).selectmenu({width: "auto"});
+
+    $('#chat_message').button().addClass('my-textfield');
+    $( "#broadcast" )
+          .button()
+          .click(function( event ) {
+      //alert("broadcast:" + $('#chat_message').val() + ":" + $("#chat").val());
+            publishMessage("audience", {type:"script", script:"showMessage('"+$("#chat").val()+"','"+$('#chat_message').val()+"', true, 2000)"});
+            event.preventDefault();
+          });
+    $("#radio1").click(function(){
+      state = "STANDBY";
+      soundEnabled = false;
+      respondState();
+    });
+    $("#radio2").click(function(){
+      state = "GOLIVE";
+      soundEnabled = true;
+
+      respondState();
+    });
+    $("#radio3").click(function(){
+      publishMessage("audience", {type:"script", script:"refresh()"});
+      window.location.reload();
+
+    });
+    $("#radio4").click(function(){
+      state = "END";
+      respondState();
+    });
+    randomNumber = getRandomInt(0,1000);
+    publishMessage("snaglee2_performer", {type:"amialone", random:randomNumber});
+
   }
 
 // PubNub code
@@ -43,10 +84,13 @@ var DEBUG = false;
     uuid: my_id
   });
 
+  var divTemplate = '<div id="[index]" class="modalDialog">\n         <div class = "center">\n          [nickname]<br>\n        </div>\n        <div class = "section group stats"> \n          <div class="col span_2_of_4_ center">\n            <img src="./images/heart_small.png" height="15px" style="float: left;">\n            <span style="float: left;" id=[index]_liked> 0</span>\n          </div>\n          <div class="col span_2_of_4_ center">\n            <img src="./images/crowd_small.png" height="15px"  style="float: left;">\n            <span id=[index]_crowd> 0</span>\n          </div>\n        </div>\n      </div>';
+
+
   // subscribe to a channel
   pubnub.subscribe({
 
-    channel: 'snaglee_performer,audience',
+    channel: 'snaglee2_performer,audience',
     presence: performanceStatus,
     message: parseMessage,
     error: function (error) {
@@ -57,16 +101,16 @@ var DEBUG = false;
 
   });
 
-
   function publishMessage(channel, options){
+    if (STOPWORKING) {
+      alert("you can't publish a message");
+      return;
+    }
     pubnub.publish({
       channel: channel,
       message: options
     });
-    pubnub.publish({
-      channel: "log",
-      message: options
-    });
+
     if(DEBUG)console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
   }
 
@@ -93,9 +137,14 @@ var DEBUG = false;
 
   // parse messages received from PubNub platform
   function parseMessage( message ) {
+    if (STOPWORKING) return;
     if(DEBUG)console.log("message - received:" + JSON.stringify(message));
     if (typeof message.type !== 'undefined') {
-
+      if ( typeof message.index !== 'undefined'){
+          if ( arrayTinderMusics[message.index] == 'undefined'){
+            return; // there's nothing we can do. 
+          } 
+      }
       switch(message.type) {
         case 'create':
           create(message.my_id, message.nickname);
@@ -112,9 +161,25 @@ var DEBUG = false;
         case 'whereami':
           inform(message.index);
           break;
+        case 'state':
+          respondState(message.my_id);
+          break;
         case 'liked':
           liked(message.index, message.likedindex); // keep track of likes for each individual.
           break;
+        case 'amialone':
+          if ( randomNumber != message.random){
+            alert("someone started a performer's interface!");
+            publishMessage("snaglee2_performer",{type:"youarenotalone", random:message.random} );
+          }
+        case 'youarenotalone':
+          console.log("randomNumber:" + randomNumber + ", msg:" + message.random);
+          if ( randomNumber == message.random){
+            alert("There can be only one performer's interface running.");
+            STOPWORKING = true;
+          }
+          break;
+        
         default:
           break;
       }
@@ -160,7 +225,17 @@ var DEBUG = false;
 
   function updateDiv(index){
     user = arrayTinderMusics[index];
-    $('#'+index).text(user.nickname + "," + user.followers.length + "," + user.likedby.length);
+    user.obj.find('#'+index+'_liked').text(user.likedby.length);
+    user.obj.find('#'+index+'_crowd').text(user.followers.length);
+    //$('#'+index +"_liked").text(user.nickname + "," + user.followers.length + "," + user.likedby.length);
+  }
+
+  function respondState(user_id){
+    if (user_id)
+      publishMessage(user_id, {type:"state-response", sound:soundEnabled, state:state});
+    else
+      publishMessage("audience", {type:"state-response", sound:soundEnabled, state:state});
+
   }
 
   function liked(user_index, liked_index){
@@ -247,10 +322,17 @@ var DEBUG = false;
     user.mode = "following";
 
     if (user.status == 'unavailable') {
-      document.getElementById(user.index).className = 'unavailable';
-    } else {
-      document.getElementById(user.index).className = 'available';
-    }
+      //document.getElementById(user.index).className = 'unavailable';
+      var actualIndex = arrayUnavailables.indexOf(user_index);
+        if (actualIndex != -1) {
+          arrayUnavailables.splice(actualIndex,1);
+        }
+        setAsAvailable(user_index);
+      //  div.remove();
+
+      } else {
+      //  document.getElementById(user.index).className = 'available';
+      }
 
 
     if ( typeof(user.follow) == 'number' ) { // I was in a pattern
@@ -437,58 +519,61 @@ var DEBUG = false;
     } else if ( user.status == 'unavailable') {
       // run something if the user is new?!
     }
-
-    var newDiv = document.createElement('div');
-    newDiv.id = index;
+    var divStr = divTemplate.replace(/\[index\]/g,user.index).replace(/\[nickname\]/g,user.nickname)
+    var newDiv = $('<div/>').html(divStr).contents();//document.createElement('div');
+    newDiv.find('.stats').css("display", "none");
+    //newDiv.id = index;
     if ( user.mode != 'editing') {
       newDiv.className = 'unavailable';
     } else {
       newDiv.className = 'unavailable-editing';
     }
-    newDiv.appendChild(document.createTextNode(user.nickname  ));
+    //newDiv.appendChild(document.createTextNode(user.nickname  ));
     // onclick set as available
-    newDiv.onclick = function() {
+  /*  newDiv.onclick = function() {
       // the user can go to available mode only when it is playing, yeah?!
       if (arrayTinderMusics[index].mode != 'editing') {
         var actualIndex = arrayUnavailables.indexOf(index);
         if (actualIndex != -1) {
           arrayUnavailables.splice(actualIndex,1);
         }
-        divUnavailables.removeChild(this);
+      //  this.remove();
         setAsAvailable(index);
       }
     }
+    */
 
     arrayUnavailables.push(index);
-    divUnavailables.appendChild(newDiv);
+    divUnavailables.append(newDiv);
+    user.obj = newDiv;
   }
 
   // set the tinder music as available
   function setAsAvailable(index) {
     var user = arrayTinderMusics[index];
-
+    var obj = user.obj;
     user.status = 'available';
 
-    var newDiv = document.createElement('div');
-    newDiv.id = index;
     if (user.mode != 'editing') {
-      newDiv.className = 'available';
+      obj.className = 'available';
     } else {
-      newDiv.className = 'available-editing';
+      obj.className = 'available-editing';
     }
-    newDiv.appendChild(document.createTextNode(user.nickname + "," + user.followers.length + "," +user.likedby.length));
+    obj.find('.stats').css("display", "");
+    //newDiv.appendChild(document.createTextNode(user.nickname + "," + user.followers.length + "," +user.likedby.length));
     // onclick, set as Unavailable
-    newDiv.onclick = function() {
+   /* obj.click(function() {
       var actualIndex = arrayAvailables.indexOf(index);
       if (actualIndex != -1) {
         arrayAvailables.splice(actualIndex,1);
       }
-      divAvailables.removeChild(this);
+      this.remove();
       setAsUnavailable(index);
-    }
+    });
+*/
 
     arrayAvailables.push(index);
-    divAvailables.appendChild(newDiv);
+    divAvailables.append(obj);
 
     if ( arrayWaitingPeople.length > 0){
       for(var i=0; i< arrayWaitingPeople.length; i++){
