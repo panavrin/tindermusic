@@ -13,6 +13,7 @@ var DEBUG = false;
   var borderMostLiked = 50;
   var borderMostFollowed = 40;
 
+  var arrayUUIDs = new Array();
   var arrayUniqueNicknames = new Array();
   var arrayTinderMusics = new Array();
   var arrayAvailables = new Array();
@@ -25,10 +26,7 @@ var DEBUG = false;
   function load() {
     divAvailables = document.getElementById('availables');
     divUnavailables = document.getElementById('unavailables');
-
-    // my_id is defined by pubnub
-    var divUsername = document.getElementById('username');
-    divUsername.appendChild(document.createTextNode("username: "+my_id));
+    divUsersOnline = document.getElementById('usersonline');
   }
 
 // PubNub code
@@ -38,15 +36,16 @@ var DEBUG = false;
 
   // initialize with Publish & Subscribe Keys
   var pubnub = PUBNUB.init({
-    publish_key: 'pub-c-412a79a5-d513-484f-82be-84a8994a8725',
-    subscribe_key: 'sub-c-544dbc6e-df22-11e4-8fb9-0619f8945a4f',
-    uuid: my_id
+      publish_key: publishKey,
+      subscribe_key: subscribeKey,
+      uuid: my_id,
   });
 
   // subscribe to a channel
   pubnub.subscribe({
 
-    channel: 'snaglee_performer,audience',
+    // channel: 'snaglee_performer,audience',
+    channel: 'performer,audience',
     presence: performanceStatus,
     message: parseMessage,
     error: function (error) {
@@ -63,15 +62,37 @@ var DEBUG = false;
       channel: channel,
       message: options
     });
-    pubnub.publish({
-      channel: "log",
-      message: options
-    });
+    // pubnub.publish({
+    //   channel: "log",
+    //   message: options
+    // });
     if(DEBUG)console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
   }
 
   // send the performance status
   function performanceStatus( message ) {
+    console.log("status: "+JSON.stringify(message));
+
+    // update the number of users on screen
+    if (typeof message.occupancy !== 'undefined') {
+      qntUsers = message.occupancy - 1; // we can't count the performer (audience+performer)
+      if (qntUsers <= 1) {
+        divUsersOnline.innerHTML = qntUsers + " user online";
+      } else {
+        divUsersOnline.innerHTML = qntUsers + " users online";
+      }
+    }
+
+
+    if (typeof message.action !== 'undefined') {
+      if (message.action == 'timeout') {
+        var user_disconected = arrayUUIDs.indexOf(message.uuid);
+        if (user_disconected != -1) {
+          var divDisconnected = document.getElementById(user_disconected);
+          divDisconnected.style.background = "grey";
+        }
+      }
+    }
 
     // if the method is called from presence callback
     if (typeof message.uuid !== 'undefined') {
@@ -132,6 +153,7 @@ var DEBUG = false;
     // if the nickname doesn't exist
     if ( arrayUniqueNicknames.indexOf(user_nickname) == -1 ) {
       var index = arrayUniqueNicknames.push(user_nickname) - 1; // push returns the length
+      arrayUUIDs.push(user_id);
       var tm = {
         'id' : user_id,
         'nickname' : user_nickname,
@@ -202,7 +224,7 @@ var DEBUG = false;
       likesMostLiked = user.likedby.length;
       $("#most-liked").text(user.nickname);
       //console.log("most liekd one: " + user.nickname);
-      // this is the most liked now. 
+      // this is the most liked now.
       //var divMostLiked = document.getElementById(indexMostLiked);
       //divMostLiked.style.border = borderMostLiked+"% pink groove";
     }
@@ -248,6 +270,12 @@ var DEBUG = false;
 
     if (user.status == 'unavailable') {
       document.getElementById(user.index).className = 'unavailable';
+      var actualIndex = arrayUnavailables.indexOf(user.index);
+      if (actualIndex != -1) {
+        arrayUnavailables.splice(actualIndex,1);
+      }
+      divUnavailables.removeChild(document.getElementById(user.index));
+      setAsAvailable(user.index);
     } else {
       document.getElementById(user.index).className = 'available';
     }
@@ -296,7 +324,7 @@ var DEBUG = false;
 
       if (ex_followed.index == indexMostFollowed) {
         followersMostFollowed = followersMostFollowed - 1;
-      } /*else if (ex_followed.index != indexMostLiked) { 
+      } /*else if (ex_followed.index != indexMostLiked) {
       // we cant change the most liked style here
         var divExFollowed = document.getElementById(ex_followed.index);
         divExFollowed.style.border = ex_followed.followers.length+"px grey solid";
@@ -319,7 +347,7 @@ var DEBUG = false;
       // if it is the most followed now
       if (suggested.followers.length > followersMostFollowed) {
         // updating the old most followed
-       /* if (indexMostFollowed != indexMostLiked && indexMostFollowed >=0) { 
+       /* if (indexMostFollowed != indexMostLiked && indexMostFollowed >=0) {
         // we cant change the style of the most liked here
           var divOldMostFollowed = document.getElementById(indexMostFollowed);
           divOldMostFollowed.style.border = suggested.followers.length+"px grey solid";
@@ -331,7 +359,7 @@ var DEBUG = false;
         $("#most-followed").text(suggested.nickname);
         //console.log("Most Followed one : " + suggested.nickname);
         // updating the new one
-       /* if (indexMostFollowed != indexMostLiked && indexMostFollowed >=0) { 
+       /* if (indexMostFollowed != indexMostLiked && indexMostFollowed >=0) {
         // we cant change the style of the most liked here
           var divMostFollowed = document.getElementById(indexMostFollowed);
           divMostFollowed.style.border = borderMostFollowed+"px pink double";
