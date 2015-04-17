@@ -75,7 +75,7 @@ var DEBUG = false;
 
     // update the number of users on screen
     if (typeof message.occupancy !== 'undefined') {
-      qntUsers = message.occupancy - 1; // we can't count the performer (audience+performer)
+      qntUsers = message.occupancy - 1; // we can't count the performer, yep?!
       if (qntUsers <= 1) {
         divUsersOnline.innerHTML = qntUsers + " user online";
       } else {
@@ -83,7 +83,7 @@ var DEBUG = false;
       }
     }
 
-
+    // change backgroud of a disconnected user
     if (typeof message.action !== 'undefined') {
       if (message.action == 'timeout') {
         var user_disconected = arrayUUIDs.indexOf(message.uuid);
