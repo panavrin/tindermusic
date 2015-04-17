@@ -13,11 +13,12 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 		<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
 
-        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-        <script src="./js/jquery.bpopup.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="./js/jquery.bpopup.min.js"></script>
 		<script src="http://cdn.pubnub.com/pubnub-3.7.1.min.js"></script>
      <!--   <script src="./js/waax.min.js"></script>-->
-        <script src="./js/audience.js"></script>
+		<script src="./js/pubnub-keys.js"></script>
+		<script src="./js/audience.js"></script>
 
 	</head>
 
@@ -74,12 +75,12 @@
 
      <!--   <div id = "submit" class = "bottom_pane">
             <div class = "buttons center responsive_font_size_4">
-                <button id = "random">Randomize!</button> 
-                <button id = "update">Submit your pattern!</button> 
-            </div> 
+                <button id = "random">Randomize!</button>
+                <button id = "update">Submit your pattern!</button>
+            </div>
         </div> -->
        <!-- <div class = "height_100">
-            
+
             <div class="section group border height_100">
                 <div class="col span_4_of_4 center border height_100">
                  <div class="banner">
@@ -105,20 +106,20 @@
 		</div>
 
         <div id="initial-message" class="dialog-message" >
-            <div>   
+            <div>
                 <h1>Crowd in C[loud]</h1>
                 <div class="responsive_font_size_4">Please type your nickname for participation. </div>
                 <div id  = "name_error_msg" class = "red responsive_font_size_4"></div>
                 <div class = "buttons center">
                     <input type="text" name="screenname" id="screenname" value="" class="ui-widget-content ui-corner-all responsive_font_size_4" />
                     <br/><br/>
-                    <button id = "start" class ="responsive_font_size_5">Start</button> 
+                    <button id = "start" class ="responsive_font_size_5">Start</button>
                 </div>
             </div>
         </div>
 
         <div id="waiting-message" class="dialog-message" >
-            <div>   
+            <div>
                 <h1>Crowd in C[loud]</h1>
                 <div class="responsive_font_size_4">Waiting for the next tune.....</div>
             </div>
@@ -135,7 +136,7 @@
         <div class="error message">
             <h2 class = "msg_header">Ups, an error ocurred</h2>
         </div>
-        
+
         <div class="like message">
             <h2 class = "msg_header">Ups, an error ocurred</h2>
         </div>

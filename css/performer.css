@@ -1,4 +1,30 @@
 body {
+  background-color: black;
+  margin: 0 0;
+  padding: 0 0;
+}
+#usersonline {
+  text-align: center;
+  width: 100%;
+  color: white;
+  font-size: 24px
+}
+.most {
+  float: left;
+  width: 50%;
+  color: white;
+  text-align: center;
+  font-size: 20px
+}
+#availables {
+  background-color: black;
+  color: black;
+  float: left;
+  width: 64%;
+  height: auto;
+}
+
+#unavailables {
   background-color: white;
   margin: 10px;
   padding: 0 0;

@@ -7,10 +7,10 @@ var DEBUG = true;
 var performerState = "STANDBY";
 /*
 
-State Diagram 
+State Diagram
 
 NAME -> EDIT : create-response msg received
-EDIT -> WAIT : update msg sent 
+EDIT -> WAIT : update msg sent
 WAIT -> CHECK : next-response msg received in "WAIT" state
 CHECK -> DATE : user press HEART button
 DATE -> CHECK : user press exit button
@@ -47,14 +47,14 @@ function hideAllMessages() {
 
   for (i=0; i<myMessages.length; i++) {
   messagesHeights[i] = $('.' + myMessages[i]).outerHeight(); // fill array
-  //$('.' + myMessages[i]).css('top', -messagesHeights[i]); //move element outside viewport     
+  //$('.' + myMessages[i]).css('top', -messagesHeights[i]); //move element outside viewport
     $('.'+myMessages[i]).animate({top:-messagesHeights[i]}, 500);
   }
 }
 
 function showMessage(type, message, autoHide, hideTime) {
   //  $('.'+ type +'-trigger').click(function(){
-  hideAllMessages();     
+  hideAllMessages();
   $("."+type+" .msg_header").text(message);
   //$("."+type+" .msg_body").text(message2);
   $('.'+type).animate({top:"0"}, 500);
@@ -139,14 +139,14 @@ function loadSounds(obj, soundMap, callback) {
 var buffers = {};
 var soundmap = { 'ir1' : './sound/ir1.wav', 'sus1' : './sound/sus_note.wav'};
 //, 'piano1': 'piano_note1_f_sharp.wav', 'indo1' : 'indonesian_gong.wav', 'june_o' : 'june_o.wav', 'reversegate' :'H3000-ReverseGate.mp3'};
-    
+
 
 function getRandomInt (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function noteNum2Freq(num){
-    return Math.pow(2,(num-57)/12) * 440 
+    return Math.pow(2,(num-57)/12) * 440
 }
 
 if(soundEnabled){
@@ -179,7 +179,7 @@ function ADSR(){
 ADSR.prototype.noteOn= function(delay, A,D, peakLevel, sustainlevel){
     peakLevel = peakLevel || 1;
     sustainlevel = sustainlevel || 0.3;
-    
+
     this.node.gain.linearRampToValueAtTime(0.0,delay + context.currentTime);
     this.node.gain.linearRampToValueAtTime(peakLevel,delay + context.currentTime + A); // Attack
     this.node.gain.linearRampToValueAtTime(sustainlevel,delay + context.currentTime + A + D);// Decay
@@ -188,9 +188,9 @@ ADSR.prototype.noteOn= function(delay, A,D, peakLevel, sustainlevel){
 ADSR.prototype.noteOff= function(delay, R, sustainlevel){
     sustainlevel = sustainlevel || 0.1;
 
-    this.node.gain.linearRampToValueAtTime(sustainlevel,delay + context.currentTime );// Release   
-    this.node.gain.linearRampToValueAtTime(0.0,delay + context.currentTime + R);// Release   
-    
+    this.node.gain.linearRampToValueAtTime(sustainlevel,delay + context.currentTime );// Release
+    this.node.gain.linearRampToValueAtTime(0.0,delay + context.currentTime + R);// Release
+
 }
 
 ADSR.prototype.play= function(delay, A,D,S,R, peakLevel, sustainlevel){
@@ -198,7 +198,7 @@ ADSR.prototype.play= function(delay, A,D,S,R, peakLevel, sustainlevel){
   this.node.gain.linearRampToValueAtTime(peakLevel,delay + context.currentTime + A); // Attack
   this.node.gain.linearRampToValueAtTime(sustainlevel,delay + context.currentTime + A + D);// Decay
   this.node.gain.linearRampToValueAtTime(sustainlevel,delay + context.currentTime + A + D + S);// sustain.
-  this.node.gain.linearRampToValueAtTime(0.0,delay + context.currentTime + A + D + S + R);// Release   
+  this.node.gain.linearRampToValueAtTime(0.0,delay + context.currentTime + A + D + S + R);// Release
 }
 var index = 0;
 
@@ -247,16 +247,16 @@ ScissorVoice.prototype.detune = function(detune){
 
 ScissorVoice.prototype.connect = function(target){
   this.output.node.connect(target);
-}   
+}
 
 
 
 window.requestAnimFrame = (function(){
-return  window.requestAnimationFrame       || 
-  window.webkitRequestAnimationFrame || 
-  window.mozRequestAnimationFrame    || 
-  window.oRequestAnimationFrame      || 
-  window.msRequestAnimationFrame     || 
+return  window.requestAnimationFrame       ||
+  window.webkitRequestAnimationFrame ||
+  window.mozRequestAnimationFrame    ||
+  window.oRequestAnimationFrame      ||
+  window.msRequestAnimationFrame     ||
   function( callback ){
   window.setTimeout(callback, 1000 / 60);
 };
@@ -271,7 +271,7 @@ var selectedScaleWeight = scaleWeight;
 var baseNote = 60;
 
 function getPicthIndex(num){
-  
+
     var weightSum = 0;
     for (var i=0; i< selectedScale.length; i++){
       weightSum += selectedScaleWeight[i];
@@ -321,7 +321,7 @@ function detectHit(x1,y1,x2,y2,w,h) {
   if(x2-x1>w) return false;
   if(y2-y1>h) return false;
   return true;
-} 
+}
 
 
 //This segment displays the validation rule for address field.
@@ -338,9 +338,9 @@ var my_id = PUBNUB.uuid();
 
 // Initialize with Publish & Subscribe Keys
 var pubnub = PUBNUB.init({
-    publish_key: 'pub-c-412a79a5-d513-484f-82be-84a8994a8725',
-    subscribe_key: 'sub-c-544dbc6e-df22-11e4-8fb9-0619f8945a4f',
-    uuid: my_id, 
+    publish_key: publishKey,
+    subscribe_key: subscribeKey,
+    uuid: my_id,
 });
 
 // Subscribe to a channel
@@ -350,7 +350,7 @@ pubnub.subscribe({
     error: function (error) {
      // Handle error here
      console.log(JSON.stringify(error));
-    }, 
+    },
     heartbeat: 15
 });
 
@@ -358,13 +358,13 @@ function parseMessage( message ) {
   if(DEBUG)console.log("message - received:" + JSON.stringify(message));
   if (typeof message.nextDivName !== 'undefined') {
     setNextDivName(message.nextDivName);
-  } 
+  }
   else if (typeof message.type !== 'undefined'){
     if ( message.type == "create-response"){
       NORESPONSE = false;
-      if (message.res == "s"){ 
-        state = "EDIT"; 
-        $('#initial-message').bPopup().close(); 
+      if (message.res == "s"){
+        state = "EDIT";
+        $('#initial-message').bPopup().close();
         var strScreenName = $("#screenname").val();
         $('#screenname_display').text(strScreenName);
         myIndex = message.index;
@@ -378,7 +378,7 @@ function parseMessage( message ) {
     }
     else if ( message.type == "next-response")
     {
-      
+
       patternElse = message.suggested_tm.tm;
       currentNickname = message.suggested_tm.nickname;
       currentIndex = message.suggested_tm.index;
@@ -390,17 +390,17 @@ function parseMessage( message ) {
 
       if ( state == "WAIT"){
         $("#bottom_banner").css("visibility", "visible");
-        $("#top_banner").css("visibility", "visible");  
+        $("#top_banner").css("visibility", "visible");
         lastPingTimeElse = Date.now();
         state = "CHECK";
         $("#waiting-message").css("visibility", "hidden");
       }
     }
     else if ( message.type == "liked-response")
-    { 
+    {
       if ( message.index == myIndex)
       {
-        showMessage('error',  "I know! You like your tune.", true, 1000);  
+        showMessage('error',  "I know! You like your tune.", true, 1000);
       }
       else if ( liked.indexOf(message.index) == -1 ){
         showMessage('error',  message.nickname + ' likes your tune!', true, 1000);
@@ -462,11 +462,12 @@ function parseMessage( message ) {
 
 function publishMessage(channel, options){
   pubnub.publish({
-    channel: "snaglee2_" + channel,
+    channel: channel,
     message: options
   });
 
   if(DEBUG)console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
+
 }
 
 
@@ -475,7 +476,7 @@ function getNextPattern(){
   publishMessage("performer", {type:"next", index: myIndex});
 
   $("#bottom_banner").css("visibility", "hidden");
-  $("#top_banner").css("visibility", "hidden");  
+  $("#top_banner").css("visibility", "hidden");
   $("#waiting-message").css("visibility", "visible");
 
 }
@@ -542,14 +543,14 @@ function like(){
 
 function modifyPattern(){
   state = "EDIT";
-  $("#submit_pane").css("visibility", "visible"); 
+  $("#submit_pane").css("visibility", "visible");
   $("#bottom_banner").css("visibility", "hidden");
-  $("#top_banner").css("visibility", "hidden");  
+  $("#top_banner").css("visibility", "hidden");
 }
 
 function mingle(){
   state = "MINGLE";
-  $("#mingle_pane").css("visibility", "visible"); 
+  $("#mingle_pane").css("visibility", "visible");
   $("#like_button_area").css("visibility", "visible");
   $("#liked_button_area").css("visibility", "visible");
 
@@ -562,7 +563,7 @@ function mingle(){
     $("#liked_button_area").css("display", "block");
   }
   $("#bottom_banner").css("visibility", "hidden");
-  $("#top_banner").css("visibility", "hidden");  
+  $("#top_banner").css("visibility", "hidden");
   for (var i=0; i < pattern.length; i++){
     var note = new Note();
     note.setPosition(pattern[i].x, pattern[i].y);
@@ -576,7 +577,7 @@ function exit(){
   state = "WAIT";
   publishMessage("performer", {type :"whereami", index: myIndex});
   $("#waiting-message").css("visibility", "visible");
-  $("#mingle_pane").css("visibility", "hidden"); 
+  $("#mingle_pane").css("visibility", "hidden");
   $("#like_button_area").css("visibility", "hidden");
   $("#liked_button_area").css("visibility", "hidden");
 
@@ -621,12 +622,10 @@ $(document).ready(function () {
   */
 
   // When message is clicked, hide it
-  $('.message').click(function(){              
+  $('.message').click(function(){
     $(this).animate({top: -$(this).outerHeight()}, 500);
-  });        
+  });
 
-
-  // resize images 
 
   $("#waiting-message").css("visibility", "hidden");
 
@@ -642,20 +641,20 @@ $(document).ready(function () {
 
 
   // Parse messages received from PubNub platform
-  
+
 /* $('#initial-message').bPopup({
     modalClose: false,
     opacity: 0.7,
     positionStyle: 'absolute',
-  //  position: [50%, 20], 
+  //  position: [50%, 20],
     escClose :false
   });
 */
 
   // this is moved here to support iOS : http://stackoverflow.com/questions/12517000/no-sound-on-ios-6-web-audio-api
-  
+
   $("#start").button().css({ margin:'5px'}).click(function(){
-        
+
     $("#name_error_msg").text("");
 
     var strScreenName = $("#screenname").val();
@@ -704,7 +703,7 @@ $(document).ready(function () {
 
 
   });
-  
+
   var playBarNote = -1;
   var playBarNoteElse = -1;
   var intervalBetweenPattern = 1000;
@@ -714,15 +713,15 @@ $(document).ready(function () {
   var progressElse = 0;
   var lastPingTime = Date.now();
   var lastPingTimeElse = Date.now();
-  var speed = 0.3; // 300 pixel per second (1000 ms); 
-  var speedElse = 0.3; // 300 pixel per second (1000 ms); 
+  var speed = 0.3; // 300 pixel per second (1000 ms);
+  var speedElse = 0.3; // 300 pixel per second (1000 ms);
 
-  
+
   function init() {
     // Initialise our object
    // obj = {x:50, y:50, w:70, h:70};
     canvas = $("#patternCanvas")[0];
- 
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight * 0.9;
     w = canvas.width;
@@ -734,7 +733,7 @@ $(document).ready(function () {
     // Add eventlistener to canvas
     canvas.addEventListener('touchmove',touchHandler, false);
     canvas.addEventListener('mousemove', mouseHandler, false);
-   
+
     draw();
   }
 
@@ -744,7 +743,7 @@ $(document).ready(function () {
   function draw() {
     canvas = $("#patternCanvas")[0];
     var ctx = canvas.getContext('2d');
-    
+
     // Clear the canvas
     ctx.clearRect(0, 0, w, h);
     var weightSum = 0;
@@ -756,7 +755,7 @@ $(document).ready(function () {
        for (var i=0; i< selectedScale.length; i++){
         ctx.beginPath();
         var height = h * selectedScaleWeight[selectedScale.length - i - 1] / weightSum;
-        
+
         ctx.rect(0, accHeight, w, height);
         accHeight += height;
         if ( i % 2 == 0)
@@ -768,12 +767,12 @@ $(document).ready(function () {
         ctx.strokeStyle = '#661A4C';
         ctx.stroke();
       */}
-      
+
     }
 
     if ( state == "EDIT" || state == "MINGLE"){
 
-     
+
       for (var i=0; i< patternSize; i++){
       //  ctx.fillRect(pattern[i].x, pattern[i].y, pattern[i].size, pattern[i].size);
         drawCircle(ctx,pattern[i].x * w, pattern[i].y* h, noteSize, '#83eb9f' );
@@ -788,7 +787,7 @@ $(document).ready(function () {
         drawCircle(ctx,playBarCircleX* w, playBarCircleY* h, noteSize/2 , '#fdff85' );
      }
    }
-   
+
    if ( state == "CHECK" || state == "MINGLE"){
 
       for (var i=0; i< patternElse.length; i++){
@@ -847,8 +846,8 @@ $(document).ready(function () {
 
           //voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
           // ADSR.prototype.noteOff= function(delay, R, sustainlevel){
-          // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);    
-          
+          // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);
+
       //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
         }
       }
@@ -860,11 +859,11 @@ $(document).ready(function () {
         //var pitchIndex = Math.floor((1 - pattern[playBarNote].y) * selectedScale.length);
         var pitchIndex =getPicthIndex(1 - pattern[playBarNote].y);
         var octave = Math.floor(pitchIndex / selectedScale.length);
-            
+
         lastPingTime = currentTime;
         //      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
     //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
-        
+
         if (playBarNote == patternSize-1)
         {
           interval = intervalBetweenPattern;
@@ -879,7 +878,7 @@ $(document).ready(function () {
           var voice  =  new ScissorVoice(baseNote + selectedScale[pitchIndex] + octave * 12,numOsc,oscType, detune);
           voice.stop( context.currentTime + intervalInSec * 0.7);
           voice.connect(reverb);
-          voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain ); 
+          voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
         }
       }
     } // end of if (state == "EDIT" || state == "DATE"){
@@ -912,8 +911,8 @@ $(document).ready(function () {
 
           //voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
           // ADSR.prototype.noteOff= function(delay, R, sustainlevel){
-          // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);    
-          
+          // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);
+
       //    console.log("begin! (" + pattern[playBarNote].distance + "," + interval);
         }
       }
@@ -926,11 +925,11 @@ $(document).ready(function () {
         var pitchIndex =getPicthIndex(1 - patternElse[playBarNoteElse].y);
 
         var octave = Math.floor(pitchIndex / selectedScale.length);
-            
+
         lastPingTimeElse = currentTime;
         //      synth.noteon(60 + pentatonicScale[playBarNote], 127, context.currentTime);
     //    synth.noteoff(60 + pentatonicScale[playBarNote],0,context.currentTime + 1);
-        
+
         if (playBarNoteElse == patternElse.length-1)
         {
           intervalElse = intervalBetweenPattern;
@@ -948,24 +947,24 @@ $(document).ready(function () {
                     //drone = new ScissorVoice(pitchListforDrone[pitchIndex],getRandomInt(3,10),"triangle", [3,5,7,12][getRandomInt(0,3)]);
           //console.log("currentTime:" + context.currentTime);
           //voice.stopAt = context.currentTime + intervalInSec * 0.4;
-          
+
           voice.stop( context.currentTime + intervalInSec * 0.7);
-          
+
           voice.connect(reverb);
           voice.output.play(0,intervalInSec*0.1,intervalInSec*0.1,intervalInSec*0.4,intervalInSec*0.1,voice.maxGain*2.0,voice.maxGain );
           //function(delay, A,D, peakLevel, sustainlevel)
          // voice.output.noteOn(0,intervalInSec*0.1,intervalInSec*0.5,voice.maxGain*2.0,voice.maxGain);
           // ADSR.prototype.noteOff= function(delay, R, sustainlevel){
-         // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);    
-          
+         // voice.output.noteOff(intervalInSec*0.5, intervalInSec*0.5,voice.maxGain);
+
         }
       }
     } // end of if (state == "EDIT" || state == "DATE"){
 
    // if (state == "CHECK" || state == "DATE"){
-      
+
     //}
-    draw(); 
+    draw();
 
 //    requestAnimationFrame(animate, renderer.domElement);
   };
@@ -978,9 +977,9 @@ $(document).ready(function () {
     //var touch = event
     if ( selectedNote <0 )
       return;
-    
+
     // Is touch close enough to our object?
-  
+
     // Assign new coordinates to our object
     pattern[selectedNote].setPosition((e.pageX -  noteSize/2)/w
         ,(e.pageY -  noteSize/2)/h);
@@ -993,7 +992,7 @@ $(document).ready(function () {
     // Redraw the canvas
     draw();
     event.preventDefault();
-  } 
+  }
 
   function mouseHandler(e){
     //Assume only one touch/only process one touch even if there's more
@@ -1001,11 +1000,11 @@ $(document).ready(function () {
     if ( selectedNote <0 )
       return;
     // Is touch close enough to our object?
-  
+
     // Assign new coordinates to our object
-    
+
     // Is touch close enough to our object?
-  
+
     // Assign new coordinates to our object
     pattern[selectedNote].setPosition((e.pageX -  noteSize/2)/w
         ,(e.pageY -  noteSize/2)/h);
@@ -1017,9 +1016,9 @@ $(document).ready(function () {
 
     // Redraw the canvas
     draw();
-  
+
     event.preventDefault();
-  } 
+  }
 
   var leftButtonDown = false;
   var selectedNote = -1;
@@ -1055,7 +1054,7 @@ $(document).ready(function () {
         tempNoteID = i;
       }
     }
-    
+
     if(tempNoteID > -1 && minDistance < noteSize) {
       selectedNote = tempNoteID;
     }
