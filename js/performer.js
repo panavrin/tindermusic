@@ -6,7 +6,7 @@ function getRandomInt (min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-var DEBUG = true;
+var DEBUG = false;
   var performanceStarted = false;
 
   var indexMostLiked = -1;
@@ -67,6 +67,7 @@ var DEBUG = true;
     });
     $("#radio4").click(function(){
       state = "END";
+      soundEnabled = false;
       respondState();
     });
     randomNumber = getRandomInt(0,1000);
@@ -100,6 +101,7 @@ var DEBUG = true;
     error: function (error) {
      // Handle error here
      console.log("error:" + JSON.stringify(error));
+     alert("subscribe error : " + JSON.stringify(error));
     },
     heartbeat: 15
 
@@ -120,7 +122,7 @@ var DEBUG = true;
 
   // send the performance status
   function performanceStatus( message ) {
-    console.log("status: "+JSON.stringify(message));
+    if(DEBUG)console.log("status: "+JSON.stringify(message));
 
     // update the number of users on screen
     if (typeof message.occupancy !== 'undefined') {
@@ -271,6 +273,7 @@ var DEBUG = true;
     // A likes B's tune
     var user = arrayTinderMusics[liked_index]; // this is B
     var user2 = arrayTinderMusics[user_index]; // this is A
+    user2.obj.css("background", "");
 
     if ( user.likedby.indexOf(user_index) == -1){ //  if B was not liked by A so far
       user.likedby.push(user_index);
@@ -316,6 +319,7 @@ var DEBUG = true;
   // update the tinder music and get the next user to follow (get the next?! always?!)
   function inform(user_index){
     var user = arrayTinderMusics[user_index];
+    
     if ( typeof(user.follow) == 'number' ) { // I was in a pattern
       var followed = user.follow;
 
@@ -342,6 +346,7 @@ var DEBUG = true;
 
   function update(user_index, user_tm) {
     var user = arrayTinderMusics[user_index];
+    user.obj.css("background", "");
 
     // update the tinder music
     user.tm = user_tm;
@@ -388,6 +393,7 @@ var DEBUG = true;
   // update the next user to follow
   function next(user_index) {
     var user = arrayTinderMusics[user_index];
+    user.obj.css("background", "");
 
     suggested_index = get_next_user_to_follow(user_index);
 

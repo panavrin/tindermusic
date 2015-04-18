@@ -3,7 +3,7 @@
 // PubNub code
 // Get an unique pubnub id
 var state = "NAME"; // it is either NAME, EDIT, WAIT, CHECK, MINGLE
-var DEBUG = true;
+var DEBUG = false;
 var performerState = "STANDBY";
 /*
 
@@ -18,7 +18,9 @@ CHECK -> EDIT : user press "update" button
 
 */
 
-var NORESPONSE = true;
+var NORESPONSE1 = true;
+var NORESPONSE2 = true;
+var NORESPONSE3 = 0;
 
 
 
@@ -27,6 +29,7 @@ var context;
 var compressor;
 var reverb;
 var myIndex;
+var strScreenName;
 var currentIndex;
 var w;
 var h;
@@ -217,7 +220,7 @@ function ScissorVoice(noteNum, numOsc, oscType, detune){
     else
       osc.type = oscType[i%oscType.length];
     osc.frequency.value = this.frequency;
-    osc.detune.value = -detune + i * 2 * detune / (numOsc - 1);
+    osc.detune.value = -detune + i * 2 * detune / numOsc ;
     osc.start(context.currentTime);
     osc.connect(this.output.node);
     this.oscs.push(osc);
@@ -350,6 +353,7 @@ pubnub.subscribe({
     error: function (error) {
      // Handle error here
      console.log(JSON.stringify(error));
+     refresh();
     },
     heartbeat: 15
 });
@@ -361,11 +365,11 @@ function parseMessage( message ) {
   }
   else if (typeof message.type !== 'undefined'){
     if ( message.type == "create-response"){
-      NORESPONSE = false;
+      NORESPONSE1 = false;
       if (message.res == "s"){
         state = "EDIT";
         $('#initial-message').bPopup().close();
-        var strScreenName = $("#screenname").val();
+        strScreenName = $("#screenname").val();
         $('#screenname_display').text(strScreenName);
         myIndex = message.index;
         lastPingTime = Date.now();
@@ -378,7 +382,7 @@ function parseMessage( message ) {
     }
     else if ( message.type == "next-response")
     {
-
+      NORESPONSE3--;
       patternElse = message.suggested_tm.tm;
       currentNickname = message.suggested_tm.nickname;
       currentIndex = message.suggested_tm.index;
@@ -459,6 +463,7 @@ function parseMessage( message ) {
 
     }
     else if (message.type == "state-response"){
+      NORESPONSE2 = false;
       soundEnabled = message.sound;
       performerState = message.state;
       if ( performerState == "STANDBY"){
@@ -488,7 +493,12 @@ function parseMessage( message ) {
 function publishMessage(channel, options){
   pubnub.publish({
     channel: channel,
-    message: options
+    message: options,
+    error : function(m) {
+      console.log("Message send failed - [" 
+          + JSON.stringify(m) + "] - Retrying in 3 seconds!");
+      setTimeout(publishMessage(channel, options), 2000);
+    }
   });
 
   if(DEBUG)console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
@@ -498,6 +508,8 @@ function publishMessage(channel, options){
 
 function getNextPattern(){
   state = "WAIT";
+  NORESPONSE3++;
+
   publishMessage("performer", {type:"next", index: myIndex});
 
   $("#bottom_banner").css("visibility", "hidden");
@@ -660,11 +672,18 @@ $(document).ready(function () {
     $(this).css("height", height);
   });
 
-  setTimeout(function(){publishMessage("performer", {type:"state", my_id:my_id});},2000);
+  NORESPONSE2 = true;
 
+  (function loopPublish2(){
+    setTimeout(function(){
+      if (NORESPONSE2){
+        publishMessage("performer", {type:"state", my_id:my_id});
+        loopPublish2();
+      }
+     
+    }, 3000);
+  })();
   
-
-
   // Parse messages received from PubNub platform
 
 /* $('#initial-message').bPopup({
@@ -682,7 +701,7 @@ $(document).ready(function () {
 
     $("#name_error_msg").text("");
 
-    var strScreenName = $("#screenname").val();
+    strScreenName = $("#screenname").val();
     if ( strScreenName.length > 12) {
       $("#name_error_msg").text("screen name is too long");
       return;
@@ -692,14 +711,17 @@ $(document).ready(function () {
       $("#name_error_msg").text("Please, use combination of alphabets and numbers for the screen name. ");
       return;
     }
-    NORESPONSE = true;
+    NORESPONSE1 = true;
     publishMessage("performer", {"type":"create", "my_id":my_id, "nickname": strScreenName});
-    setTimeout(function(){
-      if (NORESPONSE)
-        refresh();
-    },5000);
-
-
+    (function loopPublish1(){
+      setTimeout(function(){
+        if (NORESPONSE1){
+          publishMessage("performer", {"type":"create", "my_id":my_id, "nickname": strScreenName});
+          loopPublish1();
+        }
+       
+      }, 3000);
+    })();
     $("#name_error_msg").text("Waiting for response...");
 
     //$('#initial-message').bPopup().close();
