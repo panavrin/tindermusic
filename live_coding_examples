@@ -6,7 +6,7 @@ publishMessage("audience", {type:"scale", baseNote:60, scale:[0,2,3,5,7,8,10,12]
 publishMessage("audience", {type:"scale", baseNote:60, scale:[0,2,4,5,7,9,11,12], probability:1}); 
 //Eminor
 publishMessage("audience", {type:"scale", baseNote:64, scale:[0,2,3,5,7,8,10,12], probability:1}) ;
-// strong C Major7 
+//st C Major7 
 publishMessage("audience", {type:"scale", baseNote:60, scale:[0,4,7,11,12], probability:1}) ;
 //st Aminor 
 publishMessage("audience", {type:"scale", baseNote:57, scale:[0,3,7,10,12], probability:1});
