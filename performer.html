@@ -7,11 +7,19 @@
 
     <link rel="stylesheet" type="text/css" href="./css/main.css">
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="./codemirror/lib/codemirror.css">
+
+
+
+
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.3/jquery-ui.min.js"></script>
     <script src="http://cdn.pubnub.com/pubnub-3.7.1.min.js"></script>
-
+  <script src="./codemirror/lib/codemirror.js"></script>
+  <script src="./codemirror/mode/javascript/javascript.js"></script>
+  <script src="./codemirror/addon/selection/active-line.js"></script>
+  <script src="./codemirror/addon/edit/matchbrackets.js"></script>
     <script src="./js/pubnub-keys.js"></script>
     <script src="./js/performer.js"></script>
 
@@ -93,8 +101,59 @@
       </div>-->
     
     </div>
-    <div id="unavailables">
+    <div id ="codemirror_div">
+    <textarea id="code" name="code">
+publishMessage("audience", {type:"script", script:"showMessage('info','Look at the screen.', true, 2000)"});
+
+publishMessage("audience", {type:"script", script:"refresh()"});
+
+publishMessage("audience", {type:"sound-toggle", on:true});
+
+// A minor 100%
+publishMessage("audience", {type:"scale", baseNote:57, scale:[0,2,3,5,7,8,10,12], probability:1}); 
+
+// C minor 100%
+publishMessage("audience", {type:"scale", baseNote:60, scale:[0,2,3,5,7,8,10,12], probability:1});
+
+// C major 100%
+publishMessage("audience", {type:"scale", baseNote:60, scale:[0,2,4,5,7,9,11,12], probability:1}); 
+
+// E minor
+publishMessage("audience", {type:"scale", baseNote:64, scale:[0,2,3,5,7,8,10,12], probability:1}) ;
+
+// strong C Major7 
+publishMessage("audience", {type:"scale", baseNote:60, scale:[0,4,7,11,12], probability:1}) ;
+
+
+// strong A minor 
+publishMessage("audience", {type:"scale", baseNote:57, scale:[0,3,7,10,12], probability:1});
+
+// strong E minor 
+publishMessage("audience", {type:"scale", baseNote:64, scale:[0,3,7,10,12], probability:1}) ;
+
+
+// just C
+publishMessage("audience", {type:"scale", baseNote:60, scale:[0], probability:1});
+
+// just B
+publishMessage("audience", {type:"scale", baseNote:71, scale:[0], probability:1});
+
+// just high C
+publishMessage("audience", {type:"scale", baseNote:72, scale:[0], probability:1});
+
+
+// just G
+publishMessage("audience", {type:"scale", baseNote:67, scale:[0], probability:1});
+
+var majorScale = [0,2,4,5,7,9,11,12];
+var minorScale = [0,2,3,5,7,8,10,12];
+minor7 :[0,3,7,10,12]
+major7 : [0,4,7,11,12]
+    </textarea>
+  </div>
+   <div id="unavailables">
 
     </div>
+   
   </body>
 </html>

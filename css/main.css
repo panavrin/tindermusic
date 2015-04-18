@@ -58,6 +58,20 @@ size_10{
   height: 100%;
   border: 2px grey dashed;
 }
+.CodeMirror {
+  border: 1px solid #eee;
+  height: 1000px!important;
+}
+
+#codemirror_div{
+  background-color: white;
+  float:right;
+  height: auto;
+  min-width:100px;
+  max-width:100px;
+  height: 100%;
+  border: 2px grey solid;
+}
 
 .unavailable {
   background-color: yellow;

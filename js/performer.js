@@ -75,7 +75,6 @@ var DEBUG = false;
 
    // divUsersOnline = document.getElementById('usersonline');
   }
-
 // PubNub code
 
   // get an unique pubnub id
@@ -621,3 +620,16 @@ var DEBUG = false;
       arrayWaitingPeople = new Array();
     }
   }
+
+ $(document).ready(function () {
+    var myTextArea = $("#code");
+    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: false,
+        styleActiveLine: true,
+        matchBrackets: true
+    });
+
+
+  });
+
+ 
