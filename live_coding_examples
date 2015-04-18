@@ -1,46 +1,28 @@
-publishMessage("audience", {type:"script", script:"showMessage('info','Look at the screen.', true, 2000)"});
-
-publishMessage("audience", {type:"script", script:"refresh()"});
-
-publishMessage("audience", {type:"sound-toggle", on:true});
-
 // A minor 100%
 publishMessage("audience", {type:"scale", baseNote:57, scale:[0,2,3,5,7,8,10,12], probability:1}); 
-
-// C minor 100%
+//Cminor 100%
 publishMessage("audience", {type:"scale", baseNote:60, scale:[0,2,3,5,7,8,10,12], probability:1});
-
-// C major 100%
+//Cmajor 100%
 publishMessage("audience", {type:"scale", baseNote:60, scale:[0,2,4,5,7,9,11,12], probability:1}); 
-
-// E minor
+//Eminor
 publishMessage("audience", {type:"scale", baseNote:64, scale:[0,2,3,5,7,8,10,12], probability:1}) ;
-
 // strong C Major7 
 publishMessage("audience", {type:"scale", baseNote:60, scale:[0,4,7,11,12], probability:1}) ;
-
-
-// strong A minor 
+//st Aminor 
 publishMessage("audience", {type:"scale", baseNote:57, scale:[0,3,7,10,12], probability:1});
-
-// strong E minor 
+//st Eminor 
 publishMessage("audience", {type:"scale", baseNote:64, scale:[0,3,7,10,12], probability:1}) ;
-
-
-// just C
+//pu C
 publishMessage("audience", {type:"scale", baseNote:60, scale:[0], probability:1});
-
-// just B
+//pu B
 publishMessage("audience", {type:"scale", baseNote:71, scale:[0], probability:1});
-
-// just high C
+//pu high C
 publishMessage("audience", {type:"scale", baseNote:72, scale:[0], probability:1});
-
-
-// just G
+//pu G
 publishMessage("audience", {type:"scale", baseNote:67, scale:[0], probability:1});
 
 var majorScale = [0,2,4,5,7,9,11,12];
 var minorScale = [0,2,3,5,7,8,10,12];
 minor7 :[0,3,7,10,12]
 major7 : [0,4,7,11,12]
+    
