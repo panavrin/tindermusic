@@ -580,6 +580,8 @@ function like(){
 
 function modifyPattern(){
   state = "EDIT";
+  publishMessage("performer", {type :"editing", index:myIndex});
+
   $("#submit_pane").css("visibility", "visible");
   $("#bottom_banner").css("visibility", "hidden");
   $("#top_banner").css("visibility", "hidden");

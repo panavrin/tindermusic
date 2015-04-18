@@ -362,7 +362,7 @@ var DEBUG = false;
         }
         setAsAvailable(user_index);
       //  div.remove();
-
+        updateDiv(user_index)
       } 
 
     if ( typeof(user.follow) == 'number' ) { // I was in a pattern
@@ -509,9 +509,17 @@ var DEBUG = false;
   // and inform to everybody
   function editing(user_index) {
     var user = arrayTinderMusics[user_index];
-
+    var actualIndex = arrayAvailables.indexOf(user_index);
+      if (actualIndex != -1) {
+        arrayAvailables.splice(actualIndex,1);
+      }
+      else{
+        if(DEBUG) console.log("something is wrong");
+      }
+      user.obj.remove();
+      setAsUnavailable(user_index);
     // change mode
-    user.mode = 'editing'
+   /* user.mode = 'editing'
 
     // chande the color
     if (user.status == 'unavailable') {
@@ -531,7 +539,7 @@ var DEBUG = false;
       publishMessage(arrayTinderMusics[ user.followers[i] ].id,
         {"type": "user-editing"});
 
-    }
+    }*/
   }
 
 
