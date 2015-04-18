@@ -425,14 +425,34 @@ function parseMessage( message ) {
       }
     }
     else if ( message.type == "sound-toggle"){
-      soundEnabled = message.on;
+      if ( message.probability >=0 )
+      {
+        if ( message.probability > Math.random()){
+          soundEnabled = message.on;
+        }
+      }
+      else{
+        soundEnabled = message.on;
+      }
     }
     else if ( message.type == "script"){
       if (message.script){
-        try {
-          eval(message.script);
-        } catch (e) {
-          console.log(e);     
+        if ( message.probability >=0 )
+        {
+          if ( message.probability > Math.random()){
+            try {
+              eval(message.script);
+            } catch (e) {
+              console.log(e);     
+            }
+          }
+        }
+        else{
+          try {
+            eval(message.script);
+          } catch (e) {
+            console.log(e);     
+          }
         }
       }
 
@@ -448,6 +468,11 @@ function parseMessage( message ) {
       else if (performerState == "GOLIVE"){
         hideAllMessages();
         showMessage("success", "Let's go live!", true);
+        $("#STANDBY").css("visibility", "hidden");
+      }
+       else if (performerState == "END"){
+        hideAllMessages();
+        showMessage("success", "This is the end. (Applause)", true);
         $("#STANDBY").css("visibility", "hidden");
       }
     }

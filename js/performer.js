@@ -70,7 +70,7 @@ var DEBUG = true;
       respondState();
     });
     randomNumber = getRandomInt(0,1000);
-    publishMessage("snaglee2_performer", {type:"amialone", random:randomNumber});
+    publishMessage("performer", {type:"amialone", random:randomNumber});
 
     divUsersOnline = document.getElementById('usersonline');
   }
@@ -126,9 +126,9 @@ var DEBUG = true;
     if (typeof message.occupancy !== 'undefined') {
       qntUsers = message.occupancy - 1; // we can't count the performer, yep?!
       if (qntUsers <= 1) {
-        divUsersOnline.innerHTML = qntUsers + " user online";
+        divUsersOnline.innerHTML = qntUsers ;
       } else {
-        divUsersOnline.innerHTML = qntUsers + " users online";
+        divUsersOnline.innerHTML = qntUsers ;
       }
     }
 
@@ -144,7 +144,7 @@ var DEBUG = true;
     }
 
     // if the method is called from presence callback
-    if (typeof message.uuid !== 'undefined') {
+   /* if (typeof message.uuid !== 'undefined') {
         publishMessage(message.uuid,{"type": "performance",
                       "status": performanceStarted
             } );
@@ -157,7 +157,8 @@ var DEBUG = true;
                         "status": performanceStarted
           });
       }
-    }
+    }*/
+
 
   }
 
@@ -196,7 +197,7 @@ var DEBUG = true;
         case 'amialone':
           if ( randomNumber != message.random){
             alert("someone started a performer's interface!");
-            publishMessage("snaglee2_performer",{type:"youarenotalone", random:message.random} );
+            publishMessage("performer",{type:"youarenotalone", random:message.random} );
           }
         case 'youarenotalone':
           console.log("randomNumber:" + randomNumber + ", msg:" + message.random);
