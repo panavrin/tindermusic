@@ -73,7 +73,7 @@ var DEBUG = false;
     randomNumber = getRandomInt(0,1000);
     publishMessage("performer", {type:"amialone", random:randomNumber});
 
-    divUsersOnline = document.getElementById('usersonline');
+   // divUsersOnline = document.getElementById('usersonline');
   }
 
 // PubNub code
@@ -125,7 +125,7 @@ var DEBUG = false;
     if(DEBUG)console.log("status: "+JSON.stringify(message));
 
     // update the number of users on screen
-    if (typeof message.occupancy !== 'undefined') {
+  /*  if (typeof message.occupancy !== 'undefined') {
       qntUsers = message.occupancy - 1; // we can't count the performer, yep?!
       if (qntUsers <= 1) {
         divUsersOnline.innerHTML = qntUsers ;
@@ -133,7 +133,7 @@ var DEBUG = false;
         divUsersOnline.innerHTML = qntUsers ;
       }
     }
-
+*/
     // change backgroud of a disconnected user
     if (typeof message.action !== 'undefined') {
       if (message.action == 'timeout') {
