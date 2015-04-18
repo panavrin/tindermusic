@@ -12,6 +12,7 @@ body {
 
 .msg_header{
   color : black;
+  font-size: 30px;
 }
 .ui-selectmenu-text {
 font-size: 12px !important; 	
