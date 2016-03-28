@@ -78,7 +78,14 @@ var DEBUG = false;
 // PubNub code
 
   // get an unique pubnub id
-  var my_id = PUBNUB.uuid();
+  //  var my_id = PUBNUB.uuid(); // old method
+
+  // get/create/store UUID
+  var my_id = PUBNUB.db.get('session') || (function(){
+      var uuid = PUBNUB.uuid();
+      PUBNUB.db.set('session', uuid);
+      return uuid;
+  })();
 
   // initialize with Publish & Subscribe Keys
   var pubnub = PUBNUB.init({
@@ -170,8 +177,8 @@ var DEBUG = false;
     if (typeof message.type !== 'undefined') {
       if ( typeof message.index !== 'undefined'){
           if ( arrayTinderMusics[message.index] == 'undefined'){
-            return; // there's nothing we can do. 
-          } 
+            return; // there's nothing we can do.
+          }
       }
       switch(message.type) {
         case 'create':
@@ -207,7 +214,7 @@ var DEBUG = false;
             STOPWORKING = true;
           }
           break;
-        
+
         default:
           break;
       }
@@ -318,7 +325,7 @@ var DEBUG = false;
   // update the tinder music and get the next user to follow (get the next?! always?!)
   function inform(user_index){
     var user = arrayTinderMusics[user_index];
-    
+
     if ( typeof(user.follow) == 'number' ) { // I was in a pattern
       var followed = user.follow;
 
@@ -362,7 +369,7 @@ var DEBUG = false;
         setAsAvailable(user_index);
       //  div.remove();
         updateDiv(user_index)
-      } 
+      }
 
     if ( typeof(user.follow) == 'number' ) { // I was in a pattern
       var followed = user.follow;
@@ -631,5 +638,3 @@ var DEBUG = false;
 
 
   });
-
- 

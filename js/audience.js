@@ -337,7 +337,14 @@ function textAlphanumeric(inputtext){
   }
 }
 
-var my_id = PUBNUB.uuid();
+// var my_id = PUBNUB.uuid(); // old method
+
+// get/create/store UUID
+var my_id = PUBNUB.db.get('session') || (function(){
+    var uuid = PUBNUB.uuid();
+    PUBNUB.db.set('session', uuid);
+    return uuid;
+})();
 
 // Initialize with Publish & Subscribe Keys
 var pubnub = PUBNUB.init({
@@ -424,7 +431,7 @@ function parseMessage( message ) {
       }
       else{
         baseNote = message.baseNote;
-        selectedScale = message.scale; 
+        selectedScale = message.scale;
         showMessage("info", "The performer changed the scale.", true);
       }
     }
@@ -447,7 +454,7 @@ function parseMessage( message ) {
             try {
               eval(message.script);
             } catch (e) {
-              console.log(e);     
+              console.log(e);
             }
           }
         }
@@ -455,7 +462,7 @@ function parseMessage( message ) {
           try {
             eval(message.script);
           } catch (e) {
-            console.log(e);     
+            console.log(e);
           }
         }
       }
@@ -495,7 +502,7 @@ function publishMessage(channel, options){
     channel: channel,
     message: options,
     error : function(m) {
-      console.log("Message send failed - [" 
+      console.log("Message send failed - ["
           + JSON.stringify(m) + "] - Retrying in 3 seconds!");
       setTimeout(publishMessage(channel, options), 2000);
     }
@@ -640,7 +647,7 @@ function stateTransition(_state){
     break;
     case "MINGLE":
     break;
-    default: 
+    default:
     if(DEBUG) alert("unknown state:" + _state);
     break;
   }
@@ -682,10 +689,10 @@ $(document).ready(function () {
         publishMessage("performer", {type:"state", my_id:my_id});
         loopPublish2();
       }
-     
+
     }, 3000);
   })();
-  
+
   // Parse messages received from PubNub platform
 
 /* $('#initial-message').bPopup({
@@ -721,7 +728,7 @@ $(document).ready(function () {
           publishMessage("performer", {"type":"create", "my_id":my_id, "nickname": strScreenName});
           loopPublish1();
         }
-       
+
       }, 3000);
     })();
     $("#name_error_msg").text("Waiting for response...");
