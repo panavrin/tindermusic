@@ -1,4 +1,4 @@
-
+# Tinder Music
 
 This project was used during a networked music piece designed for audience participation at a music concert. 
 We developed a networked musical instrument for the web browser where a casual smartphone user can play music as well as interact with other audience members. 
@@ -8,7 +8,8 @@ We utilize a cloud service that helps build, without a server-side programming, 
 
 Here you can find some message descriptions.
 
-# tindermusic
+## project description (intended for advanced users only)
+
 tinder-audience-participation
 
 case 0 - performance status
