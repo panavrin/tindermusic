@@ -1,3 +1,13 @@
+
+
+This project was used during a networked music piece designed for audience participation at a music concert. 
+We developed a networked musical instrument for the web browser where a casual smartphone user can play music as well as interact with other audience members. 
+A participant composes a short tune with five notes and serving as a personal profile picture of each individual throughout the piece. 
+The notion of musical profiles is used to form a social network that mimics an online-dating website. People browse the profiles of others, choose someone they like, and initiate interaction online and offline. 
+We utilize a cloud service that helps build, without a server-side programming, a large-scale networked music ensemble on the web. 
+
+Here you can find some message descriptions.
+
 # tindermusic
 tinder-audience-participation
 
