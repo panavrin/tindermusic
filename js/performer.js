@@ -123,6 +123,11 @@ var DEBUG = false;
       message: options
     });
 
+    pubnub.publish({
+      channel: "log",
+      message: "{"+channel+":"+options+"}"
+    });
+    
     if(DEBUG)console.log("sent a message to channel ("+channel+") : " + JSON.stringify(options));
   }
 
