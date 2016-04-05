@@ -71,7 +71,8 @@
     <div >
     <div class = "row">
 
-    <div id="availables" class = "col-sm-10 col-md-10 col-lg-10"><!--
+    <div id="availables" class = "col-sm-10 col-md-10 col-lg-10">
+      <!--
       <div id="" class="modalDialog">
           <div class = "center">
            snaglee<br>
@@ -1094,7 +1095,9 @@
                                         </div>
 
     </div>
--->    </div>
+  -->
+    <div id="unavailables" class = "col-sm-1 col-md-1 col-lg-1">
+    </div>
     <div id ="codemirror_div" class = "col-sm-1 col-md-1 col-lg-1">
       <textarea id="code" name="code">
 // dice button will give you random tunes but you can drag and drop circles.
@@ -1131,10 +1134,8 @@ publishMessage("audience", {type:"scale", baseNote:71, scale:[0], probability:1}
 publishMessage("audience", {type:"scale", baseNote:72, scale:[0], probability:1});
 //pu G
 publishMessage("audience", {type:"scale", baseNote:67, scale:[0], probability:1});
-//pu B flat
+//pu B
 publishMessage("audience", {type:"scale", baseNote:70, scale:[0], probability:1});
-//pu low c
-publishMessage("audience", {type:"scale", baseNote:48, scale:[0], probability:0.5});
 
 var majorScale = [0,2,4,5,7,9,11,12];
 var minorScale = [0,2,3,5,7,8,10,12];
