@@ -259,8 +259,32 @@ var DEBUG = false;
             });
     // if the nickname already exists
     } else {
-      publishMessage(user_id, {"type": "create-response",
-                      "res": "f"});
+      if(arrayUUIDs.indexOf(user_id)!= -1 ){
+        var foundIndex = -1;
+        for (var i=0; i< arrayTinderMusics.length; i++){
+            if(user_id.trim()===arrayTinderMusics[i].id && user_nickname ===arrayTinderMusics[i].nickname){
+              foundIndex = i;
+              publishMessage(user_id, {"type": "create-response",
+                              "res": "s",
+                              "index": foundIndex
+                    });
+              setAsUnavailable(foundIndex);
+              console.log("user exists and returned");
+              publishMessage(user_id, {type:"script", script:"showMessage('success','Welcome Back! '" +user_nickname + ", true, 2000)"});
+
+              break;
+            }
+        }
+        if(foundIndex==-1){
+          publishMessage(user_id, {"type": "create-response","res": "f"});
+          console.log("nickname conflict! (althouhg s/he is an exisitng user )");
+
+        }
+      }
+      else{
+        publishMessage(user_id, {"type": "create-response","res": "f"});
+        console.log("nickname conflict!");
+      }
     }
   }
 
@@ -563,8 +587,8 @@ var DEBUG = false;
     if ( user.status == 'available' ) {
       user.status = 'unavailable';
       for ( i = 0; i < user.followers.length; i++) {
-        publishMessage(arrayTinderMusics[ user.followers[i] ].id,
-        {"type": "user-unavailable"});
+      /*  publishMessage(arrayTinderMusics[ user.followers[i] ].id,
+        {"type": "user-unavailable"});*/
       }
     } else if ( user.status == 'unavailable') {
       // run something if the user is new?!
@@ -623,7 +647,8 @@ var DEBUG = false;
 */
 
     arrayAvailables.push(index);
-    divAvailables.append(obj);
+    for (var i=0; i< 30; i++)
+      divAvailables.append(obj);
 
     if ( arrayWaitingPeople.length > 0){
       for(var i=0; i< arrayWaitingPeople.length; i++){

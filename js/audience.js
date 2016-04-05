@@ -481,7 +481,7 @@ function parseMessage( message ) {
         hideAllMessages();
         showMessage("success", "Let's go live!", true);
         $("#STANDBY").css("visibility", "hidden");
-      }
+      }  
        else if (performerState == "END"){
         hideAllMessages();
         showMessage("success", "This is the end. (Applause)", true);
