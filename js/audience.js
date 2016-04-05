@@ -103,8 +103,8 @@ BufferLoader.prototype.loadBuffer = function(url, index) {
     );
   }
 
-  request.onerror = function(error, ) {
-    alert('BufferLoader: XHR error', error);
+  request.onerror = function(error) {
+    console.log('BufferLoader: XHR error', error);
     debugger;
   }
 
@@ -144,11 +144,10 @@ var buffers = {};
 var soundmap = {
     'ir1' : './sound/ir1.wav'
   , 'sus1' : './sound/sus_note.wav'
-  , 'yes':'./sound/yes.wav'
+  , 'yes':'./sound/yes.mp3'
   , 'no': './sound/no.mp3'
   , 'liked': './sound/liked.mp3'
   , 'matched': './sound/matched.mp3'
-
 };
 //, 'piano1': 'piano_note1_f_sharp.wav', 'indo1' : 'indonesian_gong.wav', 'june_o' : 'june_o.wav', 'reversegate' :'H3000-ReverseGate.mp3'};
 
@@ -188,8 +187,8 @@ var playSample = function(sampleName, randomSpeed){
     var source = context.createBufferSource();
     source.buffer = buffers[sampleName];
     if(randomSpeed)
-      source.playbackRate.value = Math.random() * 1.5 + 0.5
-    source.connect(reverb);
+      source.playbackRate.value = Math.random() * 3 + 0.5
+    source.connect(compressor);
     source.start(0);
   }
 }
