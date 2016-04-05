@@ -103,8 +103,9 @@ BufferLoader.prototype.loadBuffer = function(url, index) {
     );
   }
 
-  request.onerror = function() {
-    alert('BufferLoader: XHR error');
+  request.onerror = function(error, ) {
+    alert('BufferLoader: XHR error', error);
+    debugger;
   }
 
   request.send();
@@ -140,7 +141,15 @@ function loadSounds(obj, soundMap, callback) {
 }
 
 var buffers = {};
-var soundmap = { 'ir1' : './sound/ir1.wav', 'sus1' : './sound/sus_note.wav'};
+var soundmap = {
+    'ir1' : './sound/ir1.wav'
+  , 'sus1' : './sound/sus_note.wav'
+  , 'yes':'./sound/yes.wav'
+  , 'no': './sound/no.mp3'
+  , 'liked': './sound/liked.mp3'
+  , 'matched': './sound/matched.mp3'
+
+};
 //, 'piano1': 'piano_note1_f_sharp.wav', 'indo1' : 'indonesian_gong.wav', 'june_o' : 'june_o.wav', 'reversegate' :'H3000-ReverseGate.mp3'};
 
 
@@ -171,8 +180,19 @@ if(soundEnabled){
 
 loadSounds(buffers, soundmap, function(){
   reverb.buffer = buffers['ir1'];
+
 });
 
+var playSample = function(sampleName, randomSpeed){
+  if(buffers[sampleName]){
+    var source = context.createBufferSource();
+    source.buffer = buffers[sampleName];
+    if(randomSpeed)
+      source.playbackRate.value = Math.random() * 1.5 + 0.5
+    source.connect(reverb);
+    source.start(0);
+  }
+}
 
 function ADSR(){
     this.node = context.createGain();
@@ -415,9 +435,18 @@ function parseMessage( message ) {
       }
       else if ( liked.indexOf(message.index) == -1 ){
         showMessage('error',  message.nickname + ' likes your tune!', true, 1000);
+        playSample("liked", true);
       }
       else{
         showMessage('error', "It's a match! " + message.nickname + ' likes your tune, too!', true, 1000);
+        playSample("matched", true);
+      }
+    }
+    else if ( message.type == "question")
+    {
+      if(message.text.length>0){
+        $("#question_content").text(message.text);
+        $("#question-message").css("visibility", "visible");
       }
     }
     else if ( message.type == "scale"){
@@ -426,7 +455,7 @@ function parseMessage( message ) {
         if ( message.probability > Math.random()){
           baseNote = message.baseNote;
           selectedScale = message.scale;
-          showMessage("info", "The performer changed the scale.", true);
+          //showMessage("info", "The performer changed the scale.", true);
         }
       }
       else{
@@ -481,7 +510,7 @@ function parseMessage( message ) {
         hideAllMessages();
         showMessage("success", "Let's go live!", true);
         $("#STANDBY").css("visibility", "hidden");
-      }  
+      }
        else if (performerState == "END"){
         hideAllMessages();
         showMessage("success", "This is the end. (Applause)", true);
@@ -498,6 +527,11 @@ function parseMessage( message ) {
 }
 
 function publishMessage(channel, options){
+  if(channel=="audience")
+  {
+    console.error("please not hack this application. :) ")
+    return;
+  }
   pubnub.publish({
     channel: channel,
     message: options,
@@ -522,7 +556,6 @@ function getNextPattern(){
   $("#bottom_banner").css("visibility", "hidden");
   $("#top_banner").css("visibility", "hidden");
   $("#waiting-message").css("visibility", "visible");
-
 }
 
 // Request the next div
@@ -672,9 +705,19 @@ $(document).ready(function () {
     $(this).animate({top: -$(this).outerHeight()}, 500);
   });
 
+  $("#question-message").css("visibility", "hidden");
 
   $("#waiting-message").css("visibility", "hidden");
 
+  $('#answer_yes').button().click(function(){
+    playSample('yes', true);
+    $("#question-message").css("visibility","hidden");
+  })
+
+  $('#answer_no').button().click(function(){
+    playSample('no', true);
+    $("#question-message").css("visibility","hidden");
+  });
 
   $(".tenpercent").each(function() {
     var height =  window.innerHeight * 0.08; // Max width for the image
@@ -865,7 +908,7 @@ $(document).ready(function () {
   var animate = function() {
 
     window.requestAnimFrame(animate);
-    if (state == "NAME" || state == "WAIT")
+    if (state == "NAME" )
       return;
     var currentTime = Date.now();
     var intervalInSec = interval/1000;
@@ -874,7 +917,7 @@ $(document).ready(function () {
     var detune = 20;
     var maxNumOsc = oscType.length;
 
-    if (state == "EDIT" || state == "MINGLE"){
+    if (state == "EDIT" || state == "MINGLE" || state == "WAIT"){
       progress = (currentTime - lastPingTime ) / interval;
       if (playBarNote < 0 && lastPingTime + interval < currentTime){
         playBarNote++;

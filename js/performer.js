@@ -46,8 +46,15 @@ var DEBUG = false;
           .button()
           .click(function( event ) {
       //alert("broadcast:" + $('#chat_message').val() + ":" + $("#chat").val());
-            publishMessage("audience", {type:"script", script:"showMessage('"+$("#chat").val()+"','"+$('#chat_message').val()+"', true, 2000)"});
-            event.preventDefault();
+            if($("#chat").val() == "question"){
+              publishMessage("audience", {type:"question", text:$('#chat_message').val()});
+              event.preventDefault();
+            }
+            else{
+              publishMessage("audience", {type:"script", script:"showMessage('"+$("#chat").val()+"','"+$('#chat_message').val()+"', true, 2000)"});
+              event.preventDefault();
+            }
+
           });
     $("#radio1").click(function(){
       state = "STANDBY";
@@ -57,7 +64,6 @@ var DEBUG = false;
     $("#radio2").click(function(){
       state = "GOLIVE";
       soundEnabled = true;
-
       respondState();
     });
     $("#radio3").click(function(){
@@ -360,6 +366,7 @@ var DEBUG = false;
 
       if (arrayAvailables.indexOf(followed) == -1) {
           next(user.index)
+          console.log("arrayAvailables -1 : I was folloing someone disappeared");
       }
       else {
         var suggested = arrayTinderMusics[followed];
@@ -371,6 +378,7 @@ var DEBUG = false;
                         "tm" : suggested.tm
                       }
                     });
+        console.log("followed -1 : I was folloing someone disappeared");
       }
       // TODO: update the number of followers on the screen
     }
