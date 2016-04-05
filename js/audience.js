@@ -182,12 +182,13 @@ loadSounds(buffers, soundmap, function(){
 
 });
 
+
 var playSample = function(sampleName, randomSpeed){
   if(buffers[sampleName]){
     var source = context.createBufferSource();
     source.buffer = buffers[sampleName];
     if(randomSpeed)
-      source.playbackRate.value = (Math.random() - 0.5) * 0.2 + 1
+      source.playbackRate.value = (Math.random() - 0.5) * 0.2 + 1 
     source.connect(compressor);
     source.start(0);
   }

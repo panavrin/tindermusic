@@ -356,6 +356,7 @@ var DEBUG = false;
       // this is the most liked now.
       //var divMostLiked = document.getElementById(indexMostLiked);
       //divMostLiked.style.border = borderMostLiked+"% pink groove";
+      console.log("most-liked person: id" + liked_index);
     }
     updateDiv(liked_index);
 
