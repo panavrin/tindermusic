@@ -258,6 +258,7 @@ var DEBUG = false;
       };
       arrayTinderMusics.push(tm);
       // add to view
+
       setAsUnavailable(index);
       publishMessage(user_id, {"type": "create-response",
                       "res": "s",
@@ -274,9 +275,12 @@ var DEBUG = false;
                               "res": "s",
                               "index": foundIndex
                     });
+              var user = arrayTinderMusics[foundIndex];
+              user.obj.remove();
+
               setAsUnavailable(foundIndex);
               console.log("user exists and returned");
-              publishMessage(user_id, {type:"script", script:"showMessage('success','Welcome Back! '" +user_nickname + ", true, 2000)"});
+          //    publishMessage(user_id, {type:"script", script:"showMessage('success','Welcome Back! '" +user_nickname + ", true, 2000)"});
 
               break;
             }

@@ -187,7 +187,7 @@ var playSample = function(sampleName, randomSpeed){
     var source = context.createBufferSource();
     source.buffer = buffers[sampleName];
     if(randomSpeed)
-      source.playbackRate.value = Math.random() * 1 + 0.5
+      source.playbackRate.value = (Math.random() - 0.5) * 0.2 + 1
     source.connect(compressor);
     source.start(0);
   }
