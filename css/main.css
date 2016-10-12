@@ -73,6 +73,7 @@ size_10{
 /*  min-width:100px;*/
 /*  max-width:100px;*/
   height: 100%;
+	width:100%;
   border: 2px grey solid;
 }
 
@@ -178,6 +179,7 @@ h1,h2,h3,h4 {
 	clear: both;
 	padding: 0px;
 	margin: 0px;
+	min-width: 90px;
 }
 
 /*  COLUMN SETUP  */
@@ -192,11 +194,6 @@ h1,h2,h3,h4 {
 /*	margin: 1% 0 1% 1.6%;*/
 }
 .col:first-child { margin-left: 0; }
-.section {
-	clear: both;
-	padding: 0px;
-	margin: 0px;
-}
 
 /*  COLUMN SETUP  */
 .col {
@@ -374,6 +371,12 @@ h1,h2,h3,h4 {
     background: -o-linear-gradient(#fff, #999);
 }
 
+.editor{
+	position:fixed!important;
+	bottom:0px;
+	right:0px;
+	height:100px;
+}
 
 .message{
     background-size: 40px 40px;
@@ -434,6 +437,7 @@ h1,h2,h3,h4 {
        background-position: -80px 0;
     }
 }
+
 /*  GO FULL WIDTH BELOW 480 PIXELS
 @media only screen and (max-width: 480px) {
 	.col {  margin: 1% 0 1% 0%; }

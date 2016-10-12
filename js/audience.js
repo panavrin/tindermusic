@@ -146,7 +146,7 @@ var soundmap = {
   , 'sus1' : './sound/sus_note.wav'
   , 'yes':'./sound/yes.mp3'
   , 'no': './sound/no.mp3'
-  , 'liked': './sound/liked.mp3'
+  , 'liked': './sound/liked.wav'
   , 'matched': './sound/matched.mp3'
 };
 //, 'piano1': 'piano_note1_f_sharp.wav', 'indo1' : 'indonesian_gong.wav', 'june_o' : 'june_o.wav', 'reversegate' :'H3000-ReverseGate.mp3'};
@@ -188,7 +188,7 @@ var playSample = function(sampleName, randomSpeed){
     var source = context.createBufferSource();
     source.buffer = buffers[sampleName];
     if(randomSpeed)
-      source.playbackRate.value = (Math.random() - 0.5) * 0.2 + 1 
+      source.playbackRate.value = (Math.random() - 0.5) * 0.2 + 1
     source.connect(compressor);
     source.start(0);
   }
@@ -371,6 +371,8 @@ var pubnub = PUBNUB.init({
     publish_key: publishKey,
     subscribe_key: subscribeKey,
     uuid: my_id,
+    ssl : (('https:' == document.location.protocol) ? true : false)
+
 });
 
 // Subscribe to a channel

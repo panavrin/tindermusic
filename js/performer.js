@@ -98,6 +98,7 @@ var DEBUG = false;
       publish_key: publishKey,
       subscribe_key: subscribeKey,
       uuid: my_id,
+      ssl : (('https:' == document.location.protocol) ? true : false)
   });
 
   var divTemplate = '<div id="[index]" class="modalDialog">\n         <div class = "center">\n          [nickname]<br>\n        </div>\n        <div class = "section group stats"> \n          <div class="col span_2_of_4_ center">\n            <img src="./images/heart_small.png" height="15px" style="float: left;">\n            <span style="float: left;" id=[index]_liked> 0</span>\n          </div>\n          <div class="col span_2_of_4_ center">\n            <img src="./images/crowd_small.png" height="15px"  style="float: left;">\n            <span id=[index]_crowd> 0</span>\n          </div>\n        </div>\n      </div>';
@@ -184,53 +185,60 @@ var DEBUG = false;
   // parse messages received from PubNub platform
   function parseMessage( message ) {
     if (STOPWORKING) return;
-    if(DEBUG)console.log("message - received:" + JSON.stringify(message));
-    if (typeof message.type !== 'undefined') {
-      if ( typeof message.index !== 'undefined'){
-          if ( arrayTinderMusics[message.index] == 'undefined'){
-            return; // there's nothing we can do.
-          }
-      }
-      switch(message.type) {
-        case 'create':
-          create(message.my_id, message.nickname);
-          break;
-        case 'update':
-          update(message.index, message.tm);
-          break;
-        case 'next':
-          next(message.index);
-          break;
-        case 'editing':
-          editing(message.index);
-          break;
-        case 'whereami':
-          inform(message.index);
-          break;
-        case 'state':
-          respondState(message.my_id);
-          break;
-        case 'liked':
-          liked(message.index, message.likedindex); // keep track of likes for each individual.
-          break;
-        case 'amialone':
-          if ( randomNumber != message.random){
-            alert("someone started a performer's interface!");
-            publishMessage("performer",{type:"youarenotalone", random:message.random} );
-          }
-        case 'youarenotalone':
-          console.log("randomNumber:" + randomNumber + ", msg:" + message.random);
-          if ( randomNumber == message.random){
-            alert("There can be only one performer's interface running.");
-            STOPWORKING = true;
-          }
-          break;
 
-        default:
-          break;
+    try {
+
+      if(DEBUG)console.log("message - received:" + JSON.stringify(message));
+      if (typeof message.type !== 'undefined') {
+        if ( typeof message.index !== 'undefined'){
+            if ( arrayTinderMusics[message.index] == 'undefined'){
+              return; // there's nothing we can do.
+            }
+        }
+        switch(message.type) {
+          case 'create':
+            create(message.my_id, message.nickname);
+            break;
+          case 'update':
+            update(message.index, message.tm);
+            break;
+          case 'next':
+            next(message.index);
+            break;
+          case 'editing':
+            editing(message.index);
+            break;
+          case 'whereami':
+            inform(message.index);
+            break;
+          case 'state':
+            respondState(message.my_id);
+            break;
+          case 'liked':
+            liked(message.index, message.likedindex); // keep track of likes for each individual.
+            break;
+          case 'amialone':
+            if ( randomNumber != message.random){
+              alert("someone started a performer's interface!");
+              publishMessage("performer",{type:"youarenotalone", random:message.random} );
+            }
+          case 'youarenotalone':
+            console.log("randomNumber:" + randomNumber + ", msg:" + message.random);
+            if ( randomNumber == message.random){
+              alert("There can be only one performer's interface running.");
+              STOPWORKING = true;
+            }
+            break;
+
+          default:
+            break;
+        }
+      } else {
+        console.log("unknown type of message received : " + JSON.stringify(message))
       }
-    } else {
-      console.log("unknown type of message received : " + JSON.stringify(message))
+    }
+    catch(err) {
+        console.log(err.message);
     }
   }
 
@@ -318,6 +326,8 @@ var DEBUG = false;
     // A likes B's tune
     var user = arrayTinderMusics[liked_index]; // this is B
     var user2 = arrayTinderMusics[user_index]; // this is A
+    if(!user)return;
+    if(!user2)return;
     user2.obj.css("background", "");
 
     if ( user.likedby.indexOf(user_index) == -1){ //  if B was not liked by A so far
@@ -365,6 +375,7 @@ var DEBUG = false;
   // update the tinder music and get the next user to follow (get the next?! always?!)
   function inform(user_index){
     var user = arrayTinderMusics[user_index];
+    if(!user)return;
 
     if ( typeof(user.follow) == 'number' ) { // I was in a pattern
       var followed = user.follow;
@@ -394,6 +405,7 @@ var DEBUG = false;
 
   function update(user_index, user_tm) {
     var user = arrayTinderMusics[user_index];
+    if(!user)return;
     user.obj.css("background", "");
 
     // update the tinder music
@@ -557,6 +569,7 @@ var DEBUG = false;
   // and inform to everybody
   function editing(user_index) {
     var user = arrayTinderMusics[user_index];
+    if(!user)return;
     var actualIndex = arrayAvailables.indexOf(user_index);
       if (actualIndex != -1) {
         arrayAvailables.splice(actualIndex,1);
@@ -660,8 +673,8 @@ var DEBUG = false;
 */
 
     arrayAvailables.push(index);
-    for (var i=0; i< 30; i++)
-      divAvailables.append(obj);
+
+    divAvailables.append(obj);
 
     if ( arrayWaitingPeople.length > 0){
       for(var i=0; i< arrayWaitingPeople.length; i++){
@@ -678,6 +691,22 @@ var DEBUG = false;
         styleActiveLine: true,
         matchBrackets: true
     });
+
+    var livecode = function(cm){
+      var selectedText = cm.getDoc().getSelection();
+      if(selectedText.length > 0){
+        console.log(selectedText);
+        publishMessage("audience", {type:"script",script:selectedText});
+      }else{
+        selectedText = cm.getDoc().getLine(cm.getDoc().getCursor().line);
+        console.log(selectedText);
+        publishMessage("audience", {type:"script",script:selectedText});
+      }
+    };
+
+    var map = {"Shift-Enter": livecode};
+    editor.addKeyMap(map);
+
 
 
   });
